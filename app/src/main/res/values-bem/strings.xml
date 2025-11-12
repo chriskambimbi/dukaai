@@ -1,0 +1,186 @@
+<resources>
+    <string name="app_name">Duka.AI</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_products">Ifintu</string>
+    <string name="nav_sell">Ukulisha</string>
+    <string name="nav_credit">Inongwa</string>
+    <string name="nav_analytics">Ukusambilisha</string>
+    <string name="nav_settings">Ifyakonshanya</string>
+
+    <!-- Common Actions -->
+    <string name="action_back">Ukubwelela</string>
+    <string name="action_save">Sunga</string>
+    <string name="action_cancel">Leka</string>
+    <string name="action_delete">Fimya</string>
+    <string name="action_edit">Cinja</string>
+    <string name="action_add">Onjesha</string>
+    <string name="action_search">Fwailisha</string>
+    <string name="action_filter">Saula</string>
+    <string name="action_close">Pima</string>
+    <string name="action_confirm">Ishiba</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_today_sales">Ifilishiwe Lelo</string>
+    <string name="dashboard_total_stock">Ifintu Fyonse</string>
+    <string name="dashboard_low_stock">Ifintu Ifyapwa</string>
+    <string name="dashboard_pending_credit">Inongwa Ishakwasha</string>
+    <string name="dashboard_quick_actions">Ifipangilwa Mumulomo</string>
+    <string name="dashboard_recent_sales">Ifilishiwe Fyaposacila</string>
+    <string name="dashboard_low_stock_alert">Icenjelo ca Ifintu Ifyapwa</string>
+    <string name="dashboard_items_below">Ifintu %d fyapwa pa mulando</string>
+
+    <!-- Products -->
+    <string name="products_title">Ifintu</string>
+    <string name="products_all">Ifintu Fyonse</string>
+    <string name="products_add">Onjesha Icintu</string>
+    <string name="products_search">Fwailisha ifintu…</string>
+    <string name="products_category_all">Imisango Yonse</string>
+    <string name="products_in_stock">Filipo</string>
+    <string name="products_low_stock">Fyapwa</string>
+    <string name="products_out_of_stock">Fyafwa</string>
+    <string name="products_no_results">Tafikwete ifintu</string>
+
+    <!-- Product Detail -->
+    <string name="product_detail_title">Ifyabangauka pa Cintu</string>
+    <string name="product_stock_info">Ukulondolola Ifintu</string>
+    <string name="product_current_stock">Ifintu Filipo Nomba</string>
+    <string name="product_min_threshold">Umulando Uwa Panshi</string>
+    <string name="product_restock">Onjesha Ifintu</string>
+    <string name="product_pricing">Imipashi</string>
+    <string name="product_buying_price">Umupashi Wa Kugula</string>
+    <string name="product_selling_price">Umupashi Wa Kulisha</string>
+    <string name="product_profit_margin">Umupumulo</string>
+    <string name="product_recent_activity">Ifyacitikile Fyaposacila</string>
+    <string name="product_barcode">Barcode</string>
+    <string name="product_category">Umusango</string>
+
+    <!-- Quick Sale -->
+    <string name="quick_sale_title">Ulisha Mumulomo</string>
+    <string name="quick_sale_scan">Scan Icintu</string>
+    <string name="quick_sale_manual">Lemba Mwine</string>
+    <string name="quick_sale_cart">Icisanse</string>
+    <string name="quick_sale_empty_cart">Icisanse tacikwete kantu</string>
+    <string name="quick_sale_add_items">Ikamo ifintu ukuti mutandile ukulisha</string>
+    <string name="quick_sale_subtotal">Ukubalilako</string>
+    <string name="quick_sale_complete">Malilisha Ukulisha</string>
+    <string name="quick_sale_cash">Indalama</string>
+    <string name="quick_sale_credit">Inongwa</string>
+    <string name="quick_sale_quantity">Umuputu</string>
+    <string name="quick_sale_price">Umupashi</string>
+    <string name="quick_sale_total">Fyonse</string>
+
+    <!-- Credit -->
+    <string name="credit_title">Ibuku lya Inongwa</string>
+    <string name="credit_total_owed">Fyonse Ifyakongelwa</string>
+    <string name="credit_customers">Abakalamba</string>
+    <string name="credit_filter_all">Bonse</string>
+    <string name="credit_filter_overdue">Fyapitilile</string>
+    <string name="credit_filter_due_soon">Fyakuikamo</string>
+    <string name="credit_filter_paid">Fyalipilwe</string>
+    <string name="credit_no_customers">Tafikwete abakalamba aba nongwa</string>
+    <string name="credit_owed">Bakongelwa</string>
+    <string name="credit_due">Ubushiku</string>
+
+    <!-- Customer Detail -->
+    <string name="customer_detail_title">Ifyabangauka pa Mukalamba</string>
+    <string name="customer_total_debt">Inongwa Yonse</string>
+    <string name="customer_record_payment">Lemba Ukulipila</string>
+    <string name="customer_credit_history">Amatala ya Inongwa</string>
+    <string name="customer_payment_history">Amatala ya Ukulipila</string>
+    <string name="customer_phone">Ifoni</string>
+    <string name="customer_since">Umukalamba Ukufuma</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Ukusambilisha</string>
+    <string name="analytics_sales_trend">Ukwelela kwa Ifilishiwe</string>
+    <string name="analytics_revenue">Indalama Ishingile</string>
+    <string name="analytics_profit">Umupumulo</string>
+    <string name="analytics_top_products">Ifintu Ifyatambalala</string>
+    <string name="analytics_category_breakdown">Ukugawanya Imisango</string>
+    <string name="analytics_this_week">Ici Cimo</string>
+    <string name="analytics_this_month">Umweshi Uwu</string>
+    <string name="analytics_this_year">Umwaka Uwu</string>
+    <string name="analytics_custom">Mwakufwaya Kwenu</string>
+    <string name="analytics_sales">Ifilishiwe</string>
+    <string name="analytics_units_sold">fyalishiwe</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ifyakonshanya</string>
+    <string name="settings_general">Ifyafunika</string>
+    <string name="settings_language">Ululimi</string>
+    <string name="settings_currency">Indalama</string>
+    <string name="settings_inventory">Ifintu</string>
+    <string name="settings_low_stock_threshold">Umulando wa Ifintu Ifyapwa</string>
+    <string name="settings_low_stock_threshold_desc">Icenjelo nga ifintu fyashala pafupifupi %d</string>
+    <string name="settings_stock_alerts">Amacenjelo ya Ifintu</string>
+    <string name="settings_stock_alerts_desc">Uminisha amacenjelo ya ifintu ifyapwa</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_backup">Sunga Data</string>
+    <string name="settings_backup_desc">Fumyamo data yenu</string>
+    <string name="settings_restore">Buyapo Data</string>
+    <string name="settings_restore_desc">Injishamo data ukufuma ku backup</string>
+    <string name="settings_clear_data">Fimya Data Yonse</string>
+    <string name="settings_clear_data_desc">Fimya ifintu fyonse, ifilishiwe, ne nongwa</string>
+    <string name="settings_security">Ukwikebelesha</string>
+    <string name="settings_pin">Ukwikebelesha kwa PIN</string>
+    <string name="settings_pin_desc">Pempani PIN ukuti mwakabomfya program</string>
+    <string name="settings_about">Ifyabangauka</string>
+    <string name="settings_version">Icitupa ca Program</string>
+    <string name="settings_version_info">Duka.AI v1.0.0 (Build 1)</string>
+    <string name="settings_privacy">Imfundo sha Ukubomfya</string>
+    <string name="settings_privacy_desc">Moneni imfundo shetu sha ukubomfya</string>
+    <string name="settings_help">Ubufundi ne Cituko</string>
+    <string name="settings_help_desc">Pokeleni ubufundi ukubomfya Duka.AI</string>
+
+    <!-- Settings Dialogs -->
+    <string name="dialog_select_language">Saula Ululimi</string>
+    <string name="dialog_select_currency">Saula Indalama</string>
+    <string name="dialog_set_threshold">Bika Umulando wa Ifintu Ifyapwa</string>
+    <string name="dialog_threshold_desc">Ifintu fyikalembwa ukuti fyapwa nga umuputu washalafye panshi pa mutola uwu.</string>
+    <string name="dialog_threshold_label">Umulando</string>
+    <string name="dialog_threshold_units">ifintu</string>
+
+    <!-- Languages -->
+    <string name="language_english">Icingeleshi</string>
+    <string name="language_nyanja">Icinyanja</string>
+    <string name="language_bemba">Icibemba</string>
+
+    <!-- Currencies -->
+    <string name="currency_zmw">ZMW (Kwacha ya Zambia)</string>
+    <string name="currency_usd">USD (Dollar ya America)</string>
+    <string name="currency_eur">EUR (Euro)</string>
+    <string name="currency_gbp">GBP (Pound ya Britain)</string>
+
+    <!-- About Dialog -->
+    <string name="about_version">Icitupa 1.0.0 (Build 1)</string>
+    <string name="about_description">Ukabombela ifintu ukwa mano kuli abalisha ba Zambia</string>
+    <string name="about_copyright">© 2025 Duka.AI. Amalungelo yonse yasungwa.</string>
+
+    <!-- Status -->
+    <string name="status_loading">Kutsitila…</string>
+    <string name="status_error">Iculafye</string>
+    <string name="status_empty">Tafikwete data</string>
+    <string name="status_success">Ukupambana</string>
+
+    <!-- Time -->
+    <string name="time_today">Lelo</string>
+    <string name="time_yesterday">Mailo</string>
+    <string name="time_this_week">Ici cimo</string>
+    <string name="time_this_month">Umweshi uwu</string>
+    <string name="time_hours_ago">amaola %d yapita</string>
+    <string name="time_days_ago">inshiku %d shapita</string>
+
+    <!-- Units -->
+    <string name="units_items">ifintu</string>
+    <string name="units_customers">abakalamba</string>
+    <string name="units_sold">fyalishiwe</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Icintu cacilafye</string>
+    <string name="error_network">Icipapamino ca network</string>
+    <string name="error_invalid_input">Icintu cinjishiwe tacicili bwino</string>
+    <string name="error_required_field">Icitupa ici calafwikwa</string>
+</resources>

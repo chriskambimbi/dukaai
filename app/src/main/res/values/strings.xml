@@ -1,0 +1,186 @@
+<resources>
+    <string name="app_name">Duka.AI</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_products">Products</string>
+    <string name="nav_sell">Sell</string>
+    <string name="nav_credit">Credit</string>
+    <string name="nav_analytics">Analytics</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Common Actions -->
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_add">Add</string>
+    <string name="action_search">Search</string>
+    <string name="action_filter">Filter</string>
+    <string name="action_close">Close</string>
+    <string name="action_confirm">Confirm</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_today_sales">Today\'s Sales</string>
+    <string name="dashboard_total_stock">Total Stock</string>
+    <string name="dashboard_low_stock">Low Stock</string>
+    <string name="dashboard_pending_credit">Pending Credit</string>
+    <string name="dashboard_quick_actions">Quick Actions</string>
+    <string name="dashboard_recent_sales">Recent Sales</string>
+    <string name="dashboard_low_stock_alert">Low Stock Alert</string>
+    <string name="dashboard_items_below">%d items below threshold</string>
+
+    <!-- Products -->
+    <string name="products_title">Products</string>
+    <string name="products_all">All Products</string>
+    <string name="products_add">Add Product</string>
+    <string name="products_search">Search products…</string>
+    <string name="products_category_all">All Categories</string>
+    <string name="products_in_stock">In Stock</string>
+    <string name="products_low_stock">Low Stock</string>
+    <string name="products_out_of_stock">Out of Stock</string>
+    <string name="products_no_results">No products found</string>
+
+    <!-- Product Detail -->
+    <string name="product_detail_title">Product Details</string>
+    <string name="product_stock_info">Stock Information</string>
+    <string name="product_current_stock">Current Stock</string>
+    <string name="product_min_threshold">Min. Threshold</string>
+    <string name="product_restock">Restock</string>
+    <string name="product_pricing">Pricing</string>
+    <string name="product_buying_price">Buying Price</string>
+    <string name="product_selling_price">Selling Price</string>
+    <string name="product_profit_margin">Profit Margin</string>
+    <string name="product_recent_activity">Recent Activity</string>
+    <string name="product_barcode">Barcode</string>
+    <string name="product_category">Category</string>
+
+    <!-- Quick Sale -->
+    <string name="quick_sale_title">Quick Sale</string>
+    <string name="quick_sale_scan">Scan Product</string>
+    <string name="quick_sale_manual">Manual Entry</string>
+    <string name="quick_sale_cart">Cart</string>
+    <string name="quick_sale_empty_cart">Cart is empty</string>
+    <string name="quick_sale_add_items">Add items to start a sale</string>
+    <string name="quick_sale_subtotal">Subtotal</string>
+    <string name="quick_sale_complete">Complete Sale</string>
+    <string name="quick_sale_cash">Cash</string>
+    <string name="quick_sale_credit">Credit</string>
+    <string name="quick_sale_quantity">Quantity</string>
+    <string name="quick_sale_price">Price</string>
+    <string name="quick_sale_total">Total</string>
+
+    <!-- Credit -->
+    <string name="credit_title">Credit Ledger</string>
+    <string name="credit_total_owed">Total Owed</string>
+    <string name="credit_customers">Customers</string>
+    <string name="credit_filter_all">All</string>
+    <string name="credit_filter_overdue">Overdue</string>
+    <string name="credit_filter_due_soon">Due Soon</string>
+    <string name="credit_filter_paid">Paid</string>
+    <string name="credit_no_customers">No credit customers</string>
+    <string name="credit_owed">Owed</string>
+    <string name="credit_due">Due</string>
+
+    <!-- Customer Detail -->
+    <string name="customer_detail_title">Customer Details</string>
+    <string name="customer_total_debt">Total Debt</string>
+    <string name="customer_record_payment">Record Payment</string>
+    <string name="customer_credit_history">Credit History</string>
+    <string name="customer_payment_history">Payment History</string>
+    <string name="customer_phone">Phone</string>
+    <string name="customer_since">Customer Since</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Analytics</string>
+    <string name="analytics_sales_trend">Sales Trend</string>
+    <string name="analytics_revenue">Revenue</string>
+    <string name="analytics_profit">Profit</string>
+    <string name="analytics_top_products">Top Products</string>
+    <string name="analytics_category_breakdown">Category Breakdown</string>
+    <string name="analytics_this_week">This Week</string>
+    <string name="analytics_this_month">This Month</string>
+    <string name="analytics_this_year">This Year</string>
+    <string name="analytics_custom">Custom</string>
+    <string name="analytics_sales">Sales</string>
+    <string name="analytics_units_sold">units sold</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_general">General</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_inventory">Inventory</string>
+    <string name="settings_low_stock_threshold">Low Stock Threshold</string>
+    <string name="settings_low_stock_threshold_desc">Alert when stock falls below %d units</string>
+    <string name="settings_stock_alerts">Stock Alerts</string>
+    <string name="settings_stock_alerts_desc">Enable notifications for low stock</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_backup">Backup Data</string>
+    <string name="settings_backup_desc">Export your data to storage</string>
+    <string name="settings_restore">Restore Data</string>
+    <string name="settings_restore_desc">Import data from backup</string>
+    <string name="settings_clear_data">Clear All Data</string>
+    <string name="settings_clear_data_desc">Delete all products, sales, and credits</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_pin">PIN Protection</string>
+    <string name="settings_pin_desc">Require PIN to access the app</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">App Version</string>
+    <string name="settings_version_info">Duka.AI v1.0.0 (Build 1)</string>
+    <string name="settings_privacy">Privacy Policy</string>
+    <string name="settings_privacy_desc">View our privacy policy</string>
+    <string name="settings_help">Help &amp; Support</string>
+    <string name="settings_help_desc">Get help using Duka.AI</string>
+
+    <!-- Settings Dialogs -->
+    <string name="dialog_select_language">Select Language</string>
+    <string name="dialog_select_currency">Select Currency</string>
+    <string name="dialog_set_threshold">Set Low Stock Threshold</string>
+    <string name="dialog_threshold_desc">Products will be marked as low stock when quantity falls below this value.</string>
+    <string name="dialog_threshold_label">Threshold</string>
+    <string name="dialog_threshold_units">units</string>
+
+    <!-- Languages -->
+    <string name="language_english">English</string>
+    <string name="language_nyanja">Nyanja</string>
+    <string name="language_bemba">Bemba</string>
+
+    <!-- Currencies -->
+    <string name="currency_zmw">ZMW (Zambian Kwacha)</string>
+    <string name="currency_usd">USD (US Dollar)</string>
+    <string name="currency_eur">EUR (Euro)</string>
+    <string name="currency_gbp">GBP (British Pound)</string>
+
+    <!-- About Dialog -->
+    <string name="about_version">Version 1.0.0 (Build 1)</string>
+    <string name="about_description">Smart inventory management for Zambian retailers</string>
+    <string name="about_copyright">© 2025 Duka.AI. All rights reserved.</string>
+
+    <!-- Status -->
+    <string name="status_loading">Loading…</string>
+    <string name="status_error">Error</string>
+    <string name="status_empty">No data available</string>
+    <string name="status_success">Success</string>
+
+    <!-- Time -->
+    <string name="time_today">Today</string>
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_this_week">This week</string>
+    <string name="time_this_month">This month</string>
+    <string name="time_hours_ago">%d hours ago</string>
+    <string name="time_days_ago">%d days ago</string>
+
+    <!-- Units -->
+    <string name="units_items">items</string>
+    <string name="units_customers">customers</string>
+    <string name="units_sold">sold</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_network">Network error</string>
+    <string name="error_invalid_input">Invalid input</string>
+    <string name="error_required_field">This field is required</string>
+</resources>

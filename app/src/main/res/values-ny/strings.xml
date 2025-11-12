@@ -1,0 +1,186 @@
+<resources>
+    <string name="app_name">Duka.AI</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dakitabodi</string>
+    <string name="nav_products">Zinthu</string>
+    <string name="nav_sell">Gulitsa</string>
+    <string name="nav_credit">Ngongole</string>
+    <string name="nav_analytics">Kusanthula</string>
+    <string name="nav_settings">Makonzedwe</string>
+
+    <!-- Common Actions -->
+    <string name="action_back">Kubwerera</string>
+    <string name="action_save">Sunga</string>
+    <string name="action_cancel">Leka</string>
+    <string name="action_delete">Chotsani</string>
+    <string name="action_edit">Sinthani</string>
+    <string name="action_add">Onjezani</string>
+    <string name="action_search">Fufuzani</string>
+    <string name="action_filter">Sankhani</string>
+    <string name="action_close">Tsekani</string>
+    <string name="action_confirm">Tsimikizirani</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dakitabodi</string>
+    <string name="dashboard_today_sales">Zogulitsa Lero</string>
+    <string name="dashboard_total_stock">Zinthu Zonse</string>
+    <string name="dashboard_low_stock">Zinthu Zochepa</string>
+    <string name="dashboard_pending_credit">Ngongole Zosakwanitsidwa</string>
+    <string name="dashboard_quick_actions">Zochita Mwachangu</string>
+    <string name="dashboard_recent_sales">Zogulitsa Zaposachedwa</string>
+    <string name="dashboard_low_stock_alert">Chenjezo la Zinthu Zochepa</string>
+    <string name="dashboard_items_below">Zinthu %d zochepa pa malire</string>
+
+    <!-- Products -->
+    <string name="products_title">Zinthu</string>
+    <string name="products_all">Zinthu Zonse</string>
+    <string name="products_add">Onjezani Chinthu</string>
+    <string name="products_search">Fufuzani zinthu…</string>
+    <string name="products_category_all">Magulu Onse</string>
+    <string name="products_in_stock">Zilipo</string>
+    <string name="products_low_stock">Zochepa</string>
+    <string name="products_out_of_stock">Zatha</string>
+    <string name="products_no_results">Palibe zinthu</string>
+
+    <!-- Product Detail -->
+    <string name="product_detail_title">Zambiri za Chinthu</string>
+    <string name="product_stock_info">Zidziwitso za Zinthu</string>
+    <string name="product_current_stock">Zinthu Zilipo Tsopano</string>
+    <string name="product_min_threshold">Malire Ochepa</string>
+    <string name="product_restock">Onjezani Zinthu</string>
+    <string name="product_pricing">Mitengo</string>
+    <string name="product_buying_price">Mtengo Wogula</string>
+    <string name="product_selling_price">Mtengo Wogulitsa</string>
+    <string name="product_profit_margin">Phindu</string>
+    <string name="product_recent_activity">Zochitika Zaposachedwa</string>
+    <string name="product_barcode">Barcode</string>
+    <string name="product_category">Gulu</string>
+
+    <!-- Quick Sale -->
+    <string name="quick_sale_title">Gulitsani Mwachangu</string>
+    <string name="quick_sale_scan">Scan Chinthu</string>
+    <string name="quick_sale_manual">Lembani Nokha</string>
+    <string name="quick_sale_cart">Dengu</string>
+    <string name="quick_sale_empty_cart">Dengu lalibe kanthu</string>
+    <string name="quick_sale_add_items">Ikani zinthu kuti muyambe kugulitsa</string>
+    <string name="quick_sale_subtotal">Chiwerengero</string>
+    <string name="quick_sale_complete">Maliza Kugulitsa</string>
+    <string name="quick_sale_cash">Ndalama</string>
+    <string name="quick_sale_credit">Ngongole</string>
+    <string name="quick_sale_quantity">Kuchuluka</string>
+    <string name="quick_sale_price">Mtengo</string>
+    <string name="quick_sale_total">Zonse</string>
+
+    <!-- Credit -->
+    <string name="credit_title">Buku la Ngongole</string>
+    <string name="credit_total_owed">Zonse Zokongola</string>
+    <string name="credit_customers">Makasitomala</string>
+    <string name="credit_filter_all">Onse</string>
+    <string name="credit_filter_overdue">Zapitilira</string>
+    <string name="credit_filter_due_soon">Zikuyandikira</string>
+    <string name="credit_filter_paid">Zalipidwa</string>
+    <string name="credit_no_customers">Palibe makasitomala a ngongole</string>
+    <string name="credit_owed">Akongola</string>
+    <string name="credit_due">Tsiku</string>
+
+    <!-- Customer Detail -->
+    <string name="customer_detail_title">Zambiri za Kasitomala</string>
+    <string name="customer_total_debt">Ngongole Yonse</string>
+    <string name="customer_record_payment">Lembani Malipiro</string>
+    <string name="customer_credit_history">Mbiri ya Ngongole</string>
+    <string name="customer_payment_history">Mbiri ya Malipiro</string>
+    <string name="customer_phone">Foni</string>
+    <string name="customer_since">Kasitomala Kuyambira</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Kusanthula</string>
+    <string name="analytics_sales_trend">Kukwera kwa Zogulitsa</string>
+    <string name="analytics_revenue">Ndalama Zolowa</string>
+    <string name="analytics_profit">Phindu</string>
+    <string name="analytics_top_products">Zinthu Zotchuka</string>
+    <string name="analytics_category_breakdown">Magawo a Magulu</string>
+    <string name="analytics_this_week">Sabata Ino</string>
+    <string name="analytics_this_month">Mwezi Uno</string>
+    <string name="analytics_this_year">Chaka Chino</string>
+    <string name="analytics_custom">Mwakufuna Kwanu</string>
+    <string name="analytics_sales">Zogulitsa</string>
+    <string name="analytics_units_sold">zogulitsidwa</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Makonzedwe</string>
+    <string name="settings_general">Zofunika</string>
+    <string name="settings_language">Chilankhulo</string>
+    <string name="settings_currency">Ndalama</string>
+    <string name="settings_inventory">Zinthu</string>
+    <string name="settings_low_stock_threshold">Malire a Zinthu Zochepa</string>
+    <string name="settings_low_stock_threshold_desc">Chenjezo pamene zinthu zatsala pafupifupi %d</string>
+    <string name="settings_stock_alerts">Machenjezo a Zinthu</string>
+    <string name="settings_stock_alerts_desc">Vomerezani machenjezo a zinthu zochepa</string>
+    <string name="settings_data">Deta</string>
+    <string name="settings_backup">Sungani Deta</string>
+    <string name="settings_backup_desc">Tulukani deta yanu</string>
+    <string name="settings_restore">Bwezeretsani Deta</string>
+    <string name="settings_restore_desc">Lowetsani deta kuchokera pa backup</string>
+    <string name="settings_clear_data">Chotsani Deta Yonse</string>
+    <string name="settings_clear_data_desc">Chotsani zinthu zonse, zogulitsa, ndi ngongole</string>
+    <string name="settings_security">Chitetezo</string>
+    <string name="settings_pin">Chitetezo cha PIN</string>
+    <string name="settings_pin_desc">Pemphaní PIN kuti mugwiritse ntchito pulogalamu</string>
+    <string name="settings_about">Zambiri</string>
+    <string name="settings_version">Mtundu wa Pulogalamu</string>
+    <string name="settings_version_info">Duka.AI v1.0.0 (Build 1)</string>
+    <string name="settings_privacy">Mfundo za Chinsinsi</string>
+    <string name="settings_privacy_desc">Onani mfundo zathu za chinsinsi</string>
+    <string name="settings_help">Thandizo ndi Chithandizo</string>
+    <string name="settings_help_desc">Landilani thandizo logwiritsa ntchito Duka.AI</string>
+
+    <!-- Settings Dialogs -->
+    <string name="dialog_select_language">Sankhani Chilankhulo</string>
+    <string name="dialog_select_currency">Sankhani Ndalama</string>
+    <string name="dialog_set_threshold">Ikani Malire a Zinthu Zochepa</string>
+    <string name="dialog_threshold_desc">Zinthu zidzalembedwa kuti ndi zochepa pamene kuchuluka kwake kutsika pansi pa mtengowu.</string>
+    <string name="dialog_threshold_label">Malire</string>
+    <string name="dialog_threshold_units">zinthu</string>
+
+    <!-- Languages -->
+    <string name="language_english">Chingerezi</string>
+    <string name="language_nyanja">Chinyanja</string>
+    <string name="language_bemba">Chibemba</string>
+
+    <!-- Currencies -->
+    <string name="currency_zmw">ZMW (Kwacha ya Zambia)</string>
+    <string name="currency_usd">USD (Dola ya America)</string>
+    <string name="currency_eur">EUR (Euro)</string>
+    <string name="currency_gbp">GBP (Pauni ya Britain)</string>
+
+    <!-- About Dialog -->
+    <string name="about_version">Mtundu 1.0.0 (Build 1)</string>
+    <string name="about_description">Kasamalidwe ka zinthu wanzeru kwa ogulitsa a Zambia</string>
+    <string name="about_copyright">© 2025 Duka.AI. Ufulu wonse wosungidwa.</string>
+
+    <!-- Status -->
+    <string name="status_loading">Kutsitsa…</string>
+    <string name="status_error">Cholakwika</string>
+    <string name="status_empty">Palibe deta</string>
+    <string name="status_success">Kupambana</string>
+
+    <!-- Time -->
+    <string name="time_today">Lero</string>
+    <string name="time_yesterday">Dzulo</string>
+    <string name="time_this_week">Sabata ino</string>
+    <string name="time_this_month">Mwezi uno</string>
+    <string name="time_hours_ago">maola %d apita</string>
+    <string name="time_days_ago">masiku %d apita</string>
+
+    <!-- Units -->
+    <string name="units_items">zinthu</string>
+    <string name="units_customers">makasitomala</string>
+    <string name="units_sold">zogulitsidwa</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Chinachake chalakwika</string>
+    <string name="error_network">Vuto la network</string>
+    <string name="error_invalid_input">Cholowetsa cholakwika</string>
+    <string name="error_required_field">Gawo ili likufunika</string>
+</resources>
