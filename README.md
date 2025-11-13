@@ -61,7 +61,7 @@ Transform how small shop owners (kantemba operators) in Zambia manage their busi
 
 ### 🚧 In Progress
 - [ ] Voice commands in English, Nyanja, and Bemba (ML model training)
-- [ ] Product recognition AI (dataset collection phase)
+- [x] Product recognition AI (integration complete - model needs retraining with larger dataset)
 - [ ] Advanced analytics reports
 - [ ] Multi-language UI (string resources)
 
@@ -186,6 +186,28 @@ dukaai/
   - Last sync status
 - **WorkManager Integration** - Background periodic sync
 
+#### ML Product Recognition Integration ✨ NEW
+- **TFLite Model Integration** - Complete ML infrastructure ready
+- **Model Files**:
+  - `product_classifier.tflite` (1.4 MB) successfully integrated into app assets
+  - 9-class product classifier (Chibuku, Coca-Cola, Fanta, Mealie Meal, Monster, Mosi, Pepsi, Sprite, Sugar)
+  - TensorFlow Lite with MobileNetV3 architecture
+- **Android Implementation**:
+  - `TFLiteProductClassifier` fully implemented with image preprocessing
+  - Inference time < 200ms per image
+  - Confidence threshold filtering (70% default)
+  - Product name, category, and barcode parsing
+- **Training Results**: [View visualizations](docs/assets/ml/)
+  - Model size: 1.4 MB (optimized for mobile)
+  - Input size: 224×224 RGB images
+  - Processing: Normalize to [-1, 1] range
+- **Current Status**:
+  - ✅ Integration complete - model loads and runs correctly
+  - ⚠️ Model trained on limited dataset (43 samples) - accuracy 20.93%
+  - 🔄 **Needs retraining** with 2,000-12,000+ product images for production use
+  - ✅ Use barcode scanner (99%+ accurate) as primary method until model is retrained
+- **Documentation**: Complete training analysis in `ml/MODEL_INTEGRATION_SUMMARY.md`
+
 #### UI Screens Completed
 - **AddProductScreen** - Full product creation with profit calculator
 - **AddCustomerScreen** - Zambian phone validation & normalization
@@ -308,14 +330,14 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 **Duka.AI Development Team**
 - Project Lead: Chris
-- ML Engineer: [Name]
-- Android Developer: [Name]
-- UI/UX Designer: [Name]
+- ML Engineer: Chris
+- Android Developer: Chris
+- UI/UX Designer: Chris 
 
 ## 📞 Contact & Support
 
-- **Email**: support@dukaai.app
-- **WhatsApp**: +260 XXX XXX XXX
+- **Email**: 
+- **WhatsApp**: 
 - **GitHub Issues**: [Report a bug](https://github.com/yourusername/dukaai/issues)
 
 ## 🙏 Acknowledgments
@@ -327,6 +349,6 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ---
 
-**Built with ❤️ in Zambia, for Africa**
+**Built with ❤️ in Zambia, for the Word**
 
 *Empowering kantemba owners, one sale at a time.*

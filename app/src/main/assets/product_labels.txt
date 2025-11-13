@@ -1,68 +1,9 @@
-Coca-Cola 500ml|Beverages|5449000000996
-Coca-Cola 300ml|Beverages|5449000000972
-Fanta Orange 500ml|Beverages|5449000011152
-Fanta Orange 300ml|Beverages|5449000011138
-Sprite 500ml|Beverages|5449000000439
-Sprite 300ml|Beverages|5449000000415
-Mosi Lager 375ml|Beverages|MOSI375
-Castle Lager 375ml|Beverages|CASTLE375
-Maheu 500ml|Beverages|MAHEU500
 Chibuku Shake Shake|Beverages|CHIBUKU001
-Bread White Loaf|Food|BREAD001
-Bread Brown Loaf|Food|BREAD002
+Coca-Cola 500ml|Beverages|5449000000996
+Fanta Orange 500ml|Beverages|5449000011152
 Nshima Mealie Meal 25kg|Food|NSHIMA25
-Breakfast Mealie Meal 10kg|Food|BREAKFAST10
-Rice 2kg|Food|RICE002
-Rice 5kg|Food|RICE005
-Cooking Oil 2L|Food|OIL002
-Cooking Oil 5L|Food|OIL005
-Sugar 2kg|Food|SUGAR002
-Sugar 1kg|Food|SUGAR001
-Salt 500g|Food|SALT500
-Kapenta Dried Fish|Food|KAPENTA001
-Beans 2kg|Food|BEANS002
-Tomato Paste 70g|Food|TOMATO070
-Onions 1kg|Food|ONION001
-Tomatoes 1kg|Food|TOMATO001
-Cabbage 1pc|Food|CABBAGE001
-Rape Vegetables|Food|RAPE001
-Eggs 30 pack|Food|EGGS030
-Chicken Whole|Food|CHICKEN001
-Beef 1kg|Food|BEEF001
-Sausages Pack|Food|SAUSAGE001
-Milk Fresh 1L|Food|MILK001
-Powdered Milk 400g|Food|MILKPWD400
-Margarine 500g|Food|MARG500
-Soap Lifebuoy|Household|SOAP001
-Soap Sunlight|Household|SOAP002
-Detergent Omo 1kg|Household|OMO001
-Detergent Surf 1kg|Household|SURF001
-Jik Bleach 750ml|Household|JIK750
-Handy Andy 750ml|Household|HANDY750
-Toilet Paper 4pk|Household|TOILET004
-Sanitary Pads|Household|PADS001
-Vaseline Petroleum Jelly|Household|VASELINE001
-Colgate Toothpaste|Household|COLGATE001
-Toothbrush|Household|BRUSH001
-Bathing Soap Geisha|Household|GEISHA001
-Matches Box|Household|MATCHES001
-Candles Pack|Household|CANDLES001
-Batteries AA|Household|BATTERYAA
-Batteries AAA|Household|BATTERYAAA
-Torch/Flashlight|Household|TORCH001
-Airtime MTN K10|Airtime|MTN10
-Airtime MTN K20|Airtime|MTN20
-Airtime MTN K50|Airtime|MTN50
-Airtime Airtel K10|Airtime|AIRTEL10
-Airtime Airtel K20|Airtime|AIRTEL20
-Airtime Airtel K50|Airtime|AIRTEL50
-Airtime Zamtel K10|Airtime|ZAMTEL10
-Airtime Zamtel K20|Airtime|ZAMTEL20
-Airtime Zamtel K50|Airtime|ZAMTEL50
-Charcoal 10kg|Household|CHARCOAL10
-Firewood Bundle|Household|FIREWOOD001
-Kerosene 1L|Household|KEROSENE001
-Paraffin 1L|Household|PARAFFIN001
-Ice Block|Beverages|ICEBLOCK001
-Cigarettes Single|Tobacco|CIG001
-Cigarettes Pack|Tobacco|CIG020
+Monster Energy 500ml|Beverages|MONSTER500
+Mosi Lager 375ml|Beverages|MOSI375
+Pepsi 500ml|Beverages|PEPSI500
+Sprite 500ml|Beverages|5449000000439
+White Sugar 2kg|Food|SUGAR002
