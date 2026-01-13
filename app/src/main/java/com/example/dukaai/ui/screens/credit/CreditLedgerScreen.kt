@@ -1,24 +1,46 @@
 package com.example.dukaai.ui.screens.credit
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.dukaai.ui.components.*
 import com.example.dukaai.ui.navigation.Screen
+import com.example.dukaai.ui.theme.*
 
 /**
- * Credit Ledger Screen
- * Shows all customers with outstanding credit
+ * Credit Ledger Screen - Modern Slate & Emerald Design
+ *
+ * Features:
+ * - Clean header without solid AppBar
+ * - Slate Dark summary card
+ * - Initials avatars with pastel backgrounds
+ * - WhatsApp and Pay quick actions
+ * - No dividers - whitespace separation
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +50,8 @@ fun CreditLedgerScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(CreditFilter.ALL) }
+    val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     // Sample customer data (will be replaced with ViewModel)
     val sampleCustomers = remember {
@@ -95,113 +119,209 @@ fun CreditLedgerScreen(
     val totalOutstanding = sampleCustomers.sumOf { it.totalDebt }
     val overdueCount = sampleCustomers.count { it.paymentStatus == PaymentStatus.OVERDUE }
 
+    // WhatsApp intent helper
+    fun openWhatsApp(phoneNumber: String, customerName: String, debt: Double) {
+        val message = "Hello $customerName, this is a friendly reminder about your outstanding balance of K${String.format("%.2f", debt)}. Please visit us to settle. Thank you!"
+        val formattedNumber = phoneNumber.replace(Regex("[^0-9]"), "")
+        val fullNumber = if (formattedNumber.startsWith("0")) "+260${formattedNumber.substring(1)}" else formattedNumber
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://wa.me/$fullNumber?text=${Uri.encode(message)}")
+        }
+        context.startActivity(intent)
+    }
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Credit Ledger") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },
+        containerColor = SlateBackground,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate(Screen.AddCustomer.route) }
+                onClick = { navController.navigate(Screen.AddCustomer.route) },
+                containerColor = EmeraldAccent,
+                contentColor = Color.White
             ) {
                 Icon(Icons.Default.PersonAdd, contentDescription = "Add Customer")
             }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            // Summary card
-            CreditSummaryCard(
-                totalOutstanding = totalOutstanding,
-                customerCount = sampleCustomers.size,
-                overdueCount = overdueCount
-            )
+            // Header
+            item {
+                CreditHeader()
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Summary card
+            item {
+                ModernCreditSummaryCard(
+                    totalOutstanding = totalOutstanding,
+                    customerCount = sampleCustomers.size,
+                    overdueCount = overdueCount,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
 
             // Search bar
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                onSearch = { /* Search */ },
-                placeholder = "Search customers..."
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                Spacer(modifier = Modifier.height(20.dp))
+                ModernSearchBar(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    onSearch = { focusManager.clearFocus() },
+                    placeholder = "Search customers...",
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
 
             // Filter chips
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(CreditFilter.entries.toTypedArray()) { filter ->
-                    FilterChip(
-                        selected = selectedFilter == filter,
-                        onClick = { selectedFilter = filter },
-                        label = { Text(filter.label) },
-                        leadingIcon = if (selectedFilter == filter) {
-                            {
-                                Icon(
-                                    Icons.Default.Check,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        } else null
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                CreditFilterChips(
+                    selectedFilter = selectedFilter,
+                    onFilterSelected = { selectedFilter = it }
+                )
+            }
+
+            // Customer count
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "${filteredCustomers.size} customers",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SlateTextSecondary,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // Customer list or empty state
+            if (filteredCustomers.isEmpty()) {
+                item {
+                    EmptyCreditState(
+                        searchQuery = searchQuery,
+                        onAddCustomer = { navController.navigate(Screen.AddCustomer.route) }
+                    )
+                }
+            } else {
+                items(filteredCustomers, key = { it.id }) { customer ->
+                    CustomerCard(
+                        customerName = customer.name,
+                        totalDebt = customer.totalDebt,
+                        phoneNumber = customer.phoneNumber,
+                        unpaidTransactions = customer.unpaidTransactions,
+                        lastPurchaseDate = customer.lastPurchaseDate,
+                        paymentStatus = customer.paymentStatus,
+                        onClick = {
+                            navController.navigate(Screen.CustomerDetail.createRoute(customer.id))
+                        },
+                        onWhatsAppClick = if (customer.phoneNumber != null) {
+                            { openWhatsApp(customer.phoneNumber, customer.name, customer.totalDebt) }
+                        } else null,
+                        onPayClick = {
+                            navController.navigate(Screen.RecordPayment.createRoute(customer.id))
+                        },
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CreditHeader(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Text(
+            text = "Credit Ledger",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = SlateTextPrimary
+        )
+    }
+}
+
+@Composable
+private fun ModernCreditSummaryCard(
+    totalOutstanding: Double,
+    customerCount: Int,
+    overdueCount: Int,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SlatePrimaryDark
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = "TOTAL OUTSTANDING",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.7f),
+                letterSpacing = 1.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "K ${String.format("%.2f", totalOutstanding)}",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Customer list
-            if (filteredCustomers.isEmpty()) {
-                EmptyState(
-                    icon = Icons.Default.CreditCard,
-                    title = "No customers found",
-                    message = if (searchQuery.isEmpty()) {
-                        "Add customers who buy on credit"
-                    } else {
-                        "Try adjusting your search"
-                    },
-                    actionText = if (searchQuery.isEmpty()) "Add Customer" else null,
-                    onAction = if (searchQuery.isEmpty()) {
-                        { navController.navigate(Screen.AddCustomer.route) }
-                    } else null
-                )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    item {
-                        Text(
-                            text = "${filteredCustomers.size} customers",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Outlined.People,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.White.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "$customerCount customers",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
 
-                    items(filteredCustomers) { customer ->
-                        CustomerCard(
-                            customerName = customer.name,
-                            totalDebt = customer.totalDebt,
-                            phoneNumber = customer.phoneNumber,
-                            unpaidTransactions = customer.unpaidTransactions,
-                            lastPurchaseDate = customer.lastPurchaseDate,
-                            paymentStatus = customer.paymentStatus,
-                            onClick = {
-                                navController.navigate(
-                                    Screen.CustomerDetail.createRoute(customer.id)
-                                )
-                            }
+                if (overdueCount > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(ErrorRed)
+                        )
+                        Text(
+                            text = "$overdueCount overdue",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ErrorRed,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
@@ -211,69 +331,165 @@ fun CreditLedgerScreen(
 }
 
 @Composable
-private fun CreditSummaryCard(
-    totalOutstanding: Double,
-    customerCount: Int,
-    overdueCount: Int,
+private fun ModernSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    placeholder: String,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Surface(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        )
+        shape = RoundedCornerShape(12.dp),
+        color = SlateSurfaceVariant
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "TOTAL OUTSTANDING",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "K ${String.format("%.2f", totalOutstanding)}",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "$customerCount customers",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                }
-
-                if (overdueCount > 0) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    color = SlateTextTertiary
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "Search",
+                    tint = SlateTextTertiary
+                )
+            },
+            trailingIcon = {
+                AnimatedVisibility(
+                    visible = query.isNotEmpty(),
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    IconButton(onClick = { onQueryChange("") }) {
                         Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = com.example.dukaai.ui.theme.ErrorRed,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "$overdueCount overdue",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = com.example.dukaai.ui.theme.ErrorRed,
-                            fontWeight = FontWeight.Medium
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            tint = SlateTextTertiary
                         )
                     }
                 }
+            },
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { onSearch() })
+        )
+    }
+}
+
+@Composable
+private fun CreditFilterChips(
+    selectedFilter: CreditFilter,
+    onFilterSelected: (CreditFilter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(CreditFilter.entries.toTypedArray()) { filter ->
+            val isSelected = selectedFilter == filter
+
+            FilterChip(
+                selected = isSelected,
+                onClick = { onFilterSelected(filter) },
+                label = {
+                    Text(
+                        text = filter.label,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = SlatePrimaryDark,
+                    selectedLabelColor = Color.White
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = SlateBorder,
+                    selectedBorderColor = SlatePrimaryDark,
+                    enabled = true,
+                    selected = isSelected
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyCreditState(
+    searchQuery: String,
+    onAddCustomer: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(SlateSurfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.CreditCard,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = SlateTextTertiary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = if (searchQuery.isEmpty()) "No customers yet" else "No customers found",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = SlateTextPrimary
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = if (searchQuery.isEmpty())
+                "Add customers who buy on credit"
+            else
+                "Try adjusting your search",
+            style = MaterialTheme.typography.bodyMedium,
+            color = SlateTextSecondary
+        )
+
+        if (searchQuery.isEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = onAddCustomer,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = EmeraldAccent
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Add Customer")
             }
         }
     }

@@ -16,70 +16,79 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Dark color scheme (Zambian copper & green theme)
+// ============================================
+// Modern Slate & Emerald Theme
+// Clean, professional, SaaS-style design
+// ============================================
+
+// Dark color scheme (Slate & Emerald)
 private val DarkColorScheme = darkColorScheme(
-    primary = CopperPrimaryLight,
-    onPrimary = TextOnPrimary,
-    primaryContainer = CopperPrimaryDark,
-    onPrimaryContainer = CopperPrimaryLight,
+    primary = EmeraldAccent,
+    onPrimary = Color.White,
+    primaryContainer = EmeraldDark,
+    onPrimaryContainer = EmeraldLight,
 
-    secondary = ZambianGreenLight,
-    onSecondary = TextOnPrimary,
-    secondaryContainer = ZambianGreenDark,
-    onSecondaryContainer = ZambianGreenLight,
+    secondary = SlatePrimary,
+    onSecondary = Color.White,
+    secondaryContainer = SlatePrimaryDark,
+    onSecondaryContainer = Color(0xFFE2E8F0),
 
-    tertiary = AccentOrange,
-    onTertiary = TextOnPrimary,
+    tertiary = EmeraldLight,
+    onTertiary = SlatePrimaryDark,
 
     error = ErrorRed,
-    onError = TextOnPrimary,
+    onError = Color.White,
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
 
-    background = BackgroundDark,
-    onBackground = Color(0xFFE6E1E5),
+    background = Color(0xFF0F172A),           // Slate 900
+    onBackground = Color(0xFFF1F5F9),         // Slate 100
 
-    surface = SurfaceDark,
-    onSurface = Color(0xFFE6E1E5),
-    surfaceVariant = Color(0xFF49454F),
-    onSurfaceVariant = Color(0xFFCAC4D0),
+    surface = Color(0xFF1E293B),              // Slate 800
+    onSurface = Color(0xFFF1F5F9),            // Slate 100
+    surfaceVariant = Color(0xFF334155),       // Slate 700
+    onSurfaceVariant = Color(0xFFCBD5E1),     // Slate 300
 
-    outline = Color(0xFF938F99),
-    outlineVariant = Color(0xFF49454F)
+    outline = Color(0xFF475569),              // Slate 600
+    outlineVariant = Color(0xFF334155)        // Slate 700
 )
 
-// Light color scheme (Zambian copper & green theme)
+// Light color scheme (Slate & Emerald - Modern SaaS Style)
 private val LightColorScheme = lightColorScheme(
-    primary = CopperPrimary,
-    onPrimary = TextOnPrimary,
-    primaryContainer = CopperPrimaryLight,
-    onPrimaryContainer = CopperPrimaryDark,
+    primary = SlatePrimaryDark,               // Slate 800 for primary actions
+    onPrimary = Color.White,
+    primaryContainer = SlateSurfaceVariant,   // Slate 100
+    onPrimaryContainer = SlatePrimaryDark,
 
-    secondary = ZambianGreen,
-    onSecondary = TextOnPrimary,
-    secondaryContainer = ZambianGreenLight,
-    onSecondaryContainer = ZambianGreenDark,
+    secondary = EmeraldAccent,                // Emerald for accents
+    onSecondary = Color.White,
+    secondaryContainer = EmeraldSubtle,       // Emerald 100
+    onSecondaryContainer = EmeraldDark,
 
-    tertiary = AccentOrange,
-    onTertiary = TextOnPrimary,
+    tertiary = EmeraldAccent,
+    onTertiary = Color.White,
 
     error = ErrorRed,
-    onError = TextOnPrimary,
+    onError = Color.White,
+    errorContainer = ErrorBg,
+    onErrorContainer = Color(0xFF7F1D1D),     // Red 900
 
-    background = BackgroundLight,
-    onBackground = TextPrimary,
+    background = SlateBackground,             // Slate 50 (#F8FAFC)
+    onBackground = SlateTextPrimary,          // Slate 900
 
-    surface = SurfaceLight,
-    onSurface = TextPrimary,
-    surfaceVariant = Color(0xFFE7E0EC),
-    onSurfaceVariant = TextSecondary,
+    surface = SlateSurface,                   // White
+    onSurface = SlateTextPrimary,             // Slate 900
+    surfaceVariant = SlateSurfaceVariant,     // Slate 100
+    onSurfaceVariant = SlateTextSecondary,    // Slate 500
 
-    outline = Color(0xFF79747E),
-    outlineVariant = Color(0xFFCAC4D0)
+    outline = SlateBorder,                    // Slate 200
+    outlineVariant = Color(0xFFE2E8F0)        // Slate 200
 )
 
 @Composable
 fun DukaAITheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+ but we'll disable it to keep Zambian branding
+    // Dynamic color is available on Android 12+ but we'll disable it for consistent branding
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -92,12 +101,14 @@ fun DukaAITheme(
         else -> LightColorScheme
     }
 
-    // Update system bars
+    // Update system bars for seamless look
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            // Use background color for status bar (seamless SaaS style)
+            window.statusBarColor = colorScheme.background.toArgb()
+            // Light status bar icons for light theme, dark for dark theme
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
