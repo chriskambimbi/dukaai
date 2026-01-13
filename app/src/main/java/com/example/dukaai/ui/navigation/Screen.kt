@@ -92,6 +92,12 @@ sealed class Screen(
         title = "Sync Settings"
     )
 
+    object VoiceCommand : Screen(
+        route = "voice_command",
+        title = "Voice Commands",
+        icon = Icons.Default.Mic
+    )
+
     companion object {
         // Bottom navigation items
         val bottomNavItems = listOf(

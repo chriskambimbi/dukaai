@@ -1,29 +1,43 @@
 package com.example.dukaai.ui.screens.dashboard
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.theme.*
 
 /**
- * Dashboard Screen - Main home screen of Duka.AI
- * Shows:
- * - Today's sales summary
- * - Quick action buttons (Scan, Voice, Manual)
- * - Low stock alerts
- * - Outstanding credit
- * - Top selling products
+ * Dashboard Screen - Modern, minimalistic home screen of Duka.AI
+ * Features:
+ * - Elegant gradient header with greeting
+ * - Prominent scan/voice action buttons
+ * - Smart suggestions based on time
+ * - Sales summary with visual indicators
+ * - Low stock & credit alerts
+ * - Top selling products with images
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,54 +45,406 @@ fun DashboardScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val currentHour = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+    val greeting = when {
+        currentHour < 12 -> "Good morning"
+        currentHour < 17 -> "Good afternoon"
+        else -> "Good evening"
+    }
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Duka.AI") },
-                actions = {
-                    IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
+            // Modern Header with Gradient
+            item {
+                DashboardHeader(
+                    greeting = greeting,
+                    onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                    onSearchClick = { navController.navigate(Screen.Products.route) }
+                )
+            }
+
+            // Primary Action Buttons
+            item {
+                PrimaryActionsRow(
+                    onScanClick = { navController.navigate(Screen.CameraScanner.route) },
+                    onVoiceClick = { navController.navigate(Screen.VoiceCommand.route) },
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
+
+            // Smart Suggestions
+            item {
+                SmartSuggestionsSection(
+                    onProductClick = { navController.navigate(Screen.QuickSale.route) },
+                    modifier = Modifier.padding(top = 24.dp)
+                )
+            }
+
             // Sales Summary Card
             item {
-                SalesSummaryCard()
+                SalesSummaryCard(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+                )
             }
 
-            // Quick Actions
+            // Alerts Row
             item {
-                QuickActionsSection(navController)
+                AlertsRow(
+                    onLowStockClick = { navController.navigate(Screen.Products.route) },
+                    onCreditClick = { navController.navigate(Screen.Credit.route) },
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
             }
 
-            // Low Stock Alert
+            // Top Sellers Section
             item {
-                LowStockAlertCard(navController)
+                TopSellersSection(
+                    navController = navController,
+                    modifier = Modifier.padding(top = 20.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashboardHeader(
+    greeting: String,
+    onSettingsClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        CopperPrimaryDark,
+                        CopperPrimary,
+                        CopperPrimaryLight.copy(alpha = 0.8f)
+                    )
+                )
+            )
+            .padding(bottom = 32.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            // Top Row: Logo & Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Duka.AI",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconButton(onClick = onSearchClick) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "Search",
+                            tint = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "Settings",
+                            tint = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                }
             }
 
-            // Outstanding Credit
-            item {
-                OutstandingCreditCard(navController)
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Greeting
+            Text(
+                text = greeting,
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.White.copy(alpha = 0.85f)
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Ready to make a sale?",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrimaryActionsRow(
+    onScanClick: () -> Unit,
+    onVoiceClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .offset(y = (-24).dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Scan Button - Primary CTA
+        PrimaryActionButton(
+            icon = Icons.Default.CameraAlt,
+            label = "Scan Product",
+            sublabel = "Camera",
+            onClick = onScanClick,
+            containerColor = ZambianGreen,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Voice Button
+        PrimaryActionButton(
+            icon = Icons.Default.Mic,
+            label = "Voice Sale",
+            sublabel = "Speak",
+            onClick = onVoiceClick,
+            containerColor = AccentOrange,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun PrimaryActionButton(
+    icon: ImageVector,
+    label: String,
+    sublabel: String,
+    onClick: () -> Unit,
+    containerColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .height(100.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = containerColor.copy(alpha = 0.3f)
+            ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White
+                )
             }
 
-            // Top Sellers
-            item {
-                TopSellersSection(navController)
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+                Text(
+                    text = sublabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun SmartSuggestionsSection(
+    onProductClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val currentHour = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+
+    // Time-based suggestions
+    val suggestions = remember(currentHour) {
+        when {
+            currentHour < 10 -> listOf(
+                SuggestedProduct("Bread", "K 5", StockStatus.OK, 45),
+                SuggestedProduct("Milk 500ml", "K 12", StockStatus.LOW, 8),
+                SuggestedProduct("Eggs (6)", "K 25", StockStatus.OK, 24)
+            )
+            currentHour < 14 -> listOf(
+                SuggestedProduct("Coca-Cola", "K 12", StockStatus.OK, 36),
+                SuggestedProduct("Fanta Orange", "K 12", StockStatus.OK, 28),
+                SuggestedProduct("Chips (small)", "K 5", StockStatus.LOW, 12)
+            )
+            else -> listOf(
+                SuggestedProduct("Mosi Lager", "K 15", StockStatus.OK, 48),
+                SuggestedProduct("Castle Lite", "K 18", StockStatus.LOW, 6),
+                SuggestedProduct("Cooking Oil 1L", "K 45", StockStatus.OK, 20)
+            )
+        }
+    }
+
+    val timeLabel = when {
+        currentHour < 10 -> "Morning favorites"
+        currentHour < 14 -> "Lunchtime picks"
+        currentHour < 17 -> "Afternoon favorites"
+        else -> "Evening essentials"
+    }
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = AccentOrange
+                    )
+                    Text(
+                        text = "SMART SUGGESTIONS",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        letterSpacing = 1.sp
+                    )
+                }
+                Text(
+                    text = timeLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(suggestions) { product ->
+                SuggestedProductCard(
+                    product = product,
+                    onClick = onProductClick
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestedProductCard(
+    product: SuggestedProduct,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.width(140.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            // Product image placeholder with stock badge
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Inventory2,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+
+                // Stock badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            when (product.stockStatus) {
+                                StockStatus.OK -> StockOk.copy(alpha = 0.9f)
+                                StockStatus.LOW -> StockLow.copy(alpha = 0.9f)
+                                StockStatus.OUT -> StockOut.copy(alpha = 0.9f)
+                            }
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "${product.stock}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Text(
+                text = product.price,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = CopperPrimary
+            )
         }
     }
 }
@@ -87,252 +453,205 @@ fun DashboardScreen(
 private fun SalesSummaryCard(modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
-            Text(
-                text = "TODAY'S SALES",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Revenue
-            Text(
-                text = "K 456.00",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = null,
-                        tint = SuccessGreen,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "+18% vs yesterday",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SuccessGreen
-                    )
+                Text(
+                    text = "Today's Sales",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = SuccessGreen.copy(alpha = 0.1f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.TrendingUp,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = SuccessGreen
+                        )
+                        Text(
+                            text = "+18%",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = SuccessGreen
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Transaction count and profit
+            // Main amount
+            Text(
+                text = "K 456.00",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Stats row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        text = "32 transactions",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Profit: K 120.00",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
+                StatItem(
+                    label = "Transactions",
+                    value = "32",
+                    icon = Icons.Outlined.Receipt
+                )
+                StatItem(
+                    label = "Profit",
+                    value = "K 120",
+                    icon = Icons.Outlined.Payments
+                )
+                StatItem(
+                    label = "Items Sold",
+                    value = "87",
+                    icon = Icons.Outlined.ShoppingCart
+                )
             }
         }
     }
 }
 
 @Composable
-private fun QuickActionsSection(
-    navController: NavController,
-    modifier: Modifier = Modifier
+private fun StatItem(
+    label: String,
+    value: String,
+    icon: ImageVector
 ) {
-    Column(modifier = modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "QUICK ACTIONS",
+            text = value,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Camera Scan Button
-            QuickActionButton(
-                icon = Icons.Default.CameraAlt,
-                label = "Scan",
-                modifier = Modifier.weight(1f),
-                onClick = { navController.navigate(Screen.CameraScanner.route) }
-            )
-
-            // Voice Sale Button
-            QuickActionButton(
-                icon = Icons.Default.Mic,
-                label = "Voice",
-                modifier = Modifier.weight(1f),
-                onClick = { navController.navigate(Screen.QuickSale.route) }
-            )
-
-            // Manual Sale Button
-            QuickActionButton(
-                icon = Icons.Default.List,
-                label = "Manual",
-                modifier = Modifier.weight(1f),
-                onClick = { navController.navigate(Screen.QuickSale.route) }
-            )
-        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
     }
 }
 
 @Composable
-private fun QuickActionButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
+private fun AlertsRow(
+    onLowStockClick: () -> Unit,
+    onCreditClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Low Stock Alert
+        AlertCard(
+            icon = Icons.Default.Inventory,
+            title = "5 Low Stock",
+            subtitle = "Items need restock",
+            alertColor = WarningYellow,
+            onClick = onLowStockClick,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Credit Alert
+        AlertCard(
+            icon = Icons.Default.CreditCard,
+            title = "K 2,450",
+            subtitle = "Outstanding credit",
+            alertColor = InfoBlue,
+            onClick = onCreditClick,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun AlertCard(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    alertColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(
+    Card(
         onClick = onClick,
-        modifier = modifier.height(100.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = alertColor.copy(alpha = 0.1f)
         )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-    }
-}
-
-@Composable
-private fun LowStockAlertCard(
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = WarningYellow.copy(alpha = 0.2f)
-        ),
-        onClick = { navController.navigate(Screen.Products.route) }
-    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(alertColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Warning,
+                    imageVector = icon,
                     contentDescription = null,
-                    tint = WarningYellow,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(20.dp),
+                    tint = alertColor
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "5 items low on stock",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Tap to view inventory",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
             }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null
-            )
-        }
-    }
-}
 
-@Composable
-private fun OutstandingCreditCard(
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        ),
-        onClick = { navController.navigate(Screen.Credit.route) }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "OUTSTANDING CREDIT",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "K 2,450.00",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "8 customers • 3 overdue",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
+
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
             )
         }
     }
@@ -345,30 +664,36 @@ private fun TopSellersSection(
 ) {
     Column(modifier = modifier) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "TOP SELLERS TODAY",
+                text = "Top Sellers Today",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.SemiBold
             )
             TextButton(onClick = { navController.navigate(Screen.Analytics.route) }) {
-                Text("View All")
+                Text(
+                    text = "View All",
+                    color = CopperPrimary
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Sample top sellers
+        // Top sellers data
         val topSellers = listOf(
-            TopSeller("Coca-Cola 500ml", 24, "K 288"),
-            TopSeller("Bread (loaf)", 18, "K 90"),
-            TopSeller("Mosi Lager", 12, "K 144")
+            TopSeller("Coca-Cola 500ml", 24, "K 288", StockStatus.OK, 36),
+            TopSeller("Bread (loaf)", 18, "K 90", StockStatus.OK, 22),
+            TopSeller("Mosi Lager", 12, "K 144", StockStatus.LOW, 8)
         )
 
         LazyRow(
+            contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(topSellers) { seller ->
@@ -384,52 +709,128 @@ private fun TopSellerCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.width(150.dp)
+        modifier = modifier.width(160.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            // Product image with stock badge
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.TrendingUp,
+                    imageVector = Icons.Outlined.Inventory2,
                     contentDescription = null,
-                    tint = SuccessGreen,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(36.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "${topSeller.quantity} sold",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = SuccessGreen
-                )
+
+                // Stock badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            when (topSeller.stockStatus) {
+                                StockStatus.OK -> StockOk.copy(alpha = 0.9f)
+                                StockStatus.LOW -> StockLow.copy(alpha = 0.9f)
+                                StockStatus.OUT -> StockOut.copy(alpha = 0.9f)
+                            }
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "${topSeller.stock} left",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                // Sold badge
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(SuccessGreen.copy(alpha = 0.9f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.TrendingUp,
+                        contentDescription = null,
+                        modifier = Modifier.size(10.dp),
+                        tint = Color.White
+                    )
+                    Text(
+                        text = "${topSeller.quantity}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = topSeller.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                maxLines = 2
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = topSeller.revenue,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = topSeller.revenue,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = CopperPrimary
+                )
+                Text(
+                    text = "revenue",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            }
         }
     }
 }
 
-// Data class for top sellers
+// Data classes
+private enum class StockStatus { OK, LOW, OUT }
+
+private data class SuggestedProduct(
+    val name: String,
+    val price: String,
+    val stockStatus: StockStatus,
+    val stock: Int
+)
+
 private data class TopSeller(
     val name: String,
     val quantity: Int,
-    val revenue: String
+    val revenue: String,
+    val stockStatus: StockStatus,
+    val stock: Int
 )

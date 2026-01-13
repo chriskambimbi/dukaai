@@ -21,6 +21,7 @@ import com.example.dukaai.ui.screens.analytics.AnalyticsScreen
 import com.example.dukaai.ui.screens.settings.SettingsScreen
 import com.example.dukaai.ui.screens.settings.SyncSettingsScreen
 import com.example.dukaai.ui.screens.scanner.CameraScannerScreen
+import com.example.dukaai.ui.screens.voice.VoiceCommandScreen
 
 /**
  * Main navigation graph for Duka.AI
@@ -140,6 +141,11 @@ fun DukaNavGraph(
         // Sync Settings Screen
         composable(Screen.SyncSettings.route) {
             SyncSettingsScreen(navController = navController)
+        }
+
+        // Voice Command Screen
+        composable(Screen.VoiceCommand.route) {
+            VoiceCommandScreen(navController = navController)
         }
     }
 }
