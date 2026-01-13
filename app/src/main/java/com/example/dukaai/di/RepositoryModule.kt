@@ -1,5 +1,6 @@
 package com.example.dukaai.di
 
+import com.example.dukaai.data.local.DukaDatabase
 import com.example.dukaai.data.local.dao.*
 import com.example.dukaai.data.repository.*
 import dagger.Module
@@ -29,15 +30,17 @@ object RepositoryModule {
 
     /**
      * Provides SaleRepository
+     * Injects database for transaction support
      */
     @Provides
     @Singleton
     fun provideSaleRepository(
+        database: DukaDatabase,
         saleDao: SaleDao,
         productDao: ProductDao,
         inventoryLogDao: InventoryLogDao
     ): SaleRepository {
-        return SaleRepository(saleDao, productDao, inventoryLogDao)
+        return SaleRepository(database, saleDao, productDao, inventoryLogDao)
     }
 
     /**
