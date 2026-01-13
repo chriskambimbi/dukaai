@@ -1,22 +1,37 @@
 package com.example.dukaai.ui.screens.analytics
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.dukaai.ui.components.*
-import com.example.dukaai.ui.theme.ErrorRed
-import com.example.dukaai.ui.theme.SuccessGreen
-import com.example.dukaai.ui.theme.WarningYellow
+import com.example.dukaai.ui.theme.*
 
 /**
- * Analytics Screen
- * Shows sales reports, insights, and business analytics
+ * Analytics Screen - Modern Data Dashboard Design
+ *
+ * Features:
+ * - Clean header with "Business Overview" title
+ * - Segmented control for time period filtering
+ * - Key metrics row (Revenue, Profit, Orders)
+ * - Custom line chart with gradient fill
+ * - Top performing products with progress bars
+ * - Category breakdown
+ * - Insights section
+ * - Beautiful empty state
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,114 +41,160 @@ fun AnalyticsScreen(
 ) {
     var selectedPeriod by remember { mutableStateOf(TimePeriod.TODAY) }
 
+    // Check if there's data (for empty state demo, we'll always have data)
+    val hasData = true
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Analytics") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
+        containerColor = SlateBackground
     ) { paddingValues ->
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
+            // Header
             item {
-                PeriodSelectorChips(
+                AnalyticsHeader()
+            }
+
+            // Period Selector
+            item {
+                ModernPeriodSelector(
                     selectedPeriod = selectedPeriod,
-                    onPeriodSelected = { selectedPeriod = it }
+                    onPeriodSelected = { selectedPeriod = it },
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
 
-            item {
-                KeyMetricsSection(selectedPeriod)
-            }
+            if (hasData) {
+                // Key Metrics Section
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    KeyMetricsSection(selectedPeriod)
+                }
 
-            item {
-                SalesChartCard(selectedPeriod)
-            }
+                // Revenue Trend Chart
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    RevenueTrendSection(selectedPeriod)
+                }
 
-            item {
-                TopSellersSection()
-            }
+                // Top Sellers Section
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    TopSellersSection()
+                }
 
-            item {
-                CategoryBreakdownCard()
-            }
+                // Category Breakdown
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    CategoryBreakdownSection()
+                }
 
-            item {
-                ProfitMarginCard()
-            }
-
-            item {
-                InsightsSection()
+                // Insights Section
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    InsightsSection()
+                }
+            } else {
+                // Empty State
+                item {
+                    Spacer(modifier = Modifier.height(60.dp))
+                    AnalyticsEmptyState()
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun AnalyticsHeader(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Text(
+            text = "Business Overview",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = SlateTextPrimary
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "Track your sales performance",
+            style = MaterialTheme.typography.bodyMedium,
+            color = SlateTextSecondary
+        )
     }
 }
 
 @Composable
 private fun KeyMetricsSection(period: TimePeriod) {
-    val (revenue, profit, transactions) = when (period) {
-        TimePeriod.TODAY -> Triple(456.0, 120.0, 32)
-        TimePeriod.THIS_WEEK -> Triple(3250.0, 780.0, 156)
-        TimePeriod.THIS_MONTH -> Triple(13500.0, 3200.0, 645)
+    val (revenue, profit, orders, avgSale) = when (period) {
+        TimePeriod.TODAY -> MetricsData(456.0, 120.0, 32, 14.25)
+        TimePeriod.THIS_WEEK -> MetricsData(3250.0, 780.0, 156, 20.83)
+        TimePeriod.THIS_MONTH -> MetricsData(13500.0, 3200.0, 645, 20.93)
     }
 
-    Column {
-        AnalyticsSectionHeader(title = "KEY METRICS")
-        Spacer(modifier = Modifier.height(12.dp))
-
+    Column(
+        modifier = Modifier.padding(horizontal = 20.dp)
+    ) {
+        // First row: Revenue & Profit
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            StatCard(
+            MetricSummaryCard(
                 title = "Revenue",
-                value = "K ${String.format("%.2f", revenue)}",
+                value = "K ${formatValue(revenue)}",
                 change = "+18% vs ${getPreviousPeriodLabel(period)}",
                 isPositive = true,
-                icon = Icons.Default.TrendingUp,
+                icon = Icons.Outlined.AccountBalanceWallet,
+                iconColor = EmeraldAccent,
                 modifier = Modifier.weight(1f)
             )
 
-            StatCard(
+            MetricSummaryCard(
                 title = "Profit",
-                value = "K ${String.format("%.2f", profit)}",
+                value = "K ${formatValue(profit)}",
                 change = "+12%",
                 isPositive = true,
-                icon = Icons.Default.AttachMoney,
+                icon = Icons.Outlined.TrendingUp,
+                iconColor = InfoBlue,
                 modifier = Modifier.weight(1f)
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Second row: Orders & Avg Sale
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            StatCard(
-                title = "Transactions",
-                value = transactions.toString(),
-                change = "+5%",
+            MetricSummaryCard(
+                title = "Orders",
+                value = orders.toString(),
+                change = "+8%",
                 isPositive = true,
-                icon = Icons.Default.ShoppingCart,
+                icon = Icons.Outlined.ShoppingBag,
+                iconColor = WarningYellow,
                 modifier = Modifier.weight(1f)
             )
 
-            StatCard(
+            MetricSummaryCard(
                 title = "Avg. Sale",
-                value = "K ${String.format("%.2f", revenue / transactions)}",
+                value = "K ${formatValue(avgSale)}",
                 change = "-2%",
                 isPositive = false,
-                icon = Icons.Default.Receipt,
+                icon = Icons.Outlined.Receipt,
+                iconColor = SlateTextSecondary,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -141,25 +202,37 @@ private fun KeyMetricsSection(period: TimePeriod) {
 }
 
 @Composable
-private fun SalesChartCard(period: TimePeriod) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            AnalyticsSectionHeader(title = "SALES TREND")
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SimpleSalesBarChart(period)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                ChartLegendItem(color = MaterialTheme.colorScheme.primary, label = "Sales")
-                ChartLegendItem(color = MaterialTheme.colorScheme.secondary, label = "Profit")
-            }
-        }
+private fun RevenueTrendSection(period: TimePeriod) {
+    val chartData = when (period) {
+        TimePeriod.TODAY -> listOf(
+            ChartDataPoint("8AM", 45f),
+            ChartDataPoint("10AM", 78f),
+            ChartDataPoint("12PM", 120f),
+            ChartDataPoint("2PM", 95f),
+            ChartDataPoint("4PM", 68f),
+            ChartDataPoint("6PM", 50f)
+        )
+        TimePeriod.THIS_WEEK -> listOf(
+            ChartDataPoint("Mon", 420f),
+            ChartDataPoint("Tue", 380f),
+            ChartDataPoint("Wed", 550f),
+            ChartDataPoint("Thu", 480f),
+            ChartDataPoint("Fri", 620f),
+            ChartDataPoint("Sat", 520f),
+            ChartDataPoint("Sun", 280f)
+        )
+        TimePeriod.THIS_MONTH -> listOf(
+            ChartDataPoint("W1", 2800f),
+            ChartDataPoint("W2", 3400f),
+            ChartDataPoint("W3", 3100f),
+            ChartDataPoint("W4", 4200f)
+        )
     }
+
+    RevenueTrendCard(
+        dataPoints = chartData,
+        modifier = Modifier.padding(horizontal = 20.dp)
+    )
 }
 
 @Composable
@@ -172,55 +245,70 @@ private fun TopSellersSection() {
         TopSellerItem("Sugar 2kg", 98, 2940.0, 5)
     )
 
-    Column {
-        AnalyticsSectionHeader(title = "TOP SELLERS")
+    val maxRevenue = topSellers.maxOfOrNull { it.revenue } ?: 1.0
+
+    Column(
+        modifier = Modifier.padding(horizontal = 20.dp)
+    ) {
+        AnalyticsSectionTitle(title = "Best Sellers")
+
         Spacer(modifier = Modifier.height(12.dp))
 
         topSellers.forEach { seller ->
-            TopSellerCard(seller)
+            TopSellerRow(
+                rank = seller.rank,
+                productName = seller.name,
+                unitsSold = seller.unitsSold,
+                revenue = seller.revenue,
+                maxRevenue = maxRevenue
+            )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-private fun CategoryBreakdownCard() {
+private fun CategoryBreakdownSection() {
     val categories = listOf(
-        CategoryItem("Beverages", 5680.0, 0.42f),
-        CategoryItem("Food", 3890.0, 0.29f),
-        CategoryItem("Toiletries", 2450.0, 0.18f),
-        CategoryItem("Cooking Oil", 1480.0, 0.11f)
+        CategoryData("Beverages", 5680.0, 0.42f, EmeraldAccent),
+        CategoryData("Food", 3890.0, 0.29f, InfoBlue),
+        CategoryData("Toiletries", 2450.0, 0.18f, WarningYellow),
+        CategoryData("Cooking Oil", 1480.0, 0.11f, ErrorRed)
     )
 
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            AnalyticsSectionHeader(title = "CATEGORY BREAKDOWN")
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = SlateBorder,
+                shape = RoundedCornerShape(16.dp)
+            ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = SlateSurface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = "Category Breakdown",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = SlateTextPrimary
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             categories.forEach { category ->
-                CategoryBreakdownRow(category)
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProfitMarginCard() {
-    val profitMargins = listOf(
-        ProfitMarginItem("High Margin (>25%)", 38, SuccessGreen),
-        ProfitMarginItem("Medium (15-25%)", 45, WarningYellow),
-        ProfitMarginItem("Low (<15%)", 17, ErrorRed)
-    )
-
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            AnalyticsSectionHeader(title = "PROFIT MARGINS")
-            Spacer(modifier = Modifier.height(16.dp))
-
-            profitMargins.forEach { item ->
-                ProfitMarginRow(item)
-                Spacer(modifier = Modifier.height(12.dp))
+                ModernCategoryRow(
+                    categoryName = category.name,
+                    revenue = category.revenue,
+                    percentage = category.percentage,
+                    color = category.color
+                )
+                Spacer(modifier = Modifier.height(14.dp))
             }
         }
     }
@@ -229,33 +317,71 @@ private fun ProfitMarginCard() {
 @Composable
 private fun InsightsSection() {
     val insights = listOf(
-        InsightItem(
-            icon = Icons.Default.TrendingUp,
+        InsightData(
+            icon = Icons.Outlined.Schedule,
             title = "Peak Sales Hour",
             description = "Your busiest time is 12-2pm. Ensure you're well-stocked during this period.",
             type = InsightType.INFO
         ),
-        InsightItem(
-            icon = Icons.Default.Warning,
+        InsightData(
+            icon = Icons.Outlined.Inventory2,
             title = "Low Stock Alert",
             description = "8 products are running low. Restock soon to avoid lost sales.",
             type = InsightType.WARNING
         ),
-        InsightItem(
-            icon = Icons.Default.Star,
+        InsightData(
+            icon = Icons.Outlined.Star,
             title = "Best Performer",
             description = "Coca-Cola is your top seller. Consider bulk ordering for better margins.",
             type = InsightType.SUCCESS
         )
     )
 
-    Column {
-        AnalyticsSectionHeader(title = "INSIGHTS & RECOMMENDATIONS")
+    Column(
+        modifier = Modifier.padding(horizontal = 20.dp)
+    ) {
+        AnalyticsSectionTitle(title = "Insights & Tips")
+
         Spacer(modifier = Modifier.height(12.dp))
 
         insights.forEach { insight ->
-            InsightCard(insight)
+            ModernInsightCard(
+                icon = insight.icon,
+                title = insight.title,
+                description = insight.description,
+                type = insight.type
+            )
             Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+}
+
+// Data classes for this screen
+private data class MetricsData(
+    val revenue: Double,
+    val profit: Double,
+    val orders: Int,
+    val avgSale: Double
+)
+
+private data class CategoryData(
+    val name: String,
+    val revenue: Double,
+    val percentage: Float,
+    val color: androidx.compose.ui.graphics.Color
+)
+
+private data class InsightData(
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val title: String,
+    val description: String,
+    val type: InsightType
+)
+
+private fun formatValue(value: Double): String {
+    return if (value == value.toLong().toDouble()) {
+        value.toLong().toString()
+    } else {
+        String.format("%.2f", value)
     }
 }
