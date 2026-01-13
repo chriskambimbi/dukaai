@@ -10,6 +10,12 @@ import com.example.dukaai.data.local.entity.*
 /**
  * Duka.AI Room Database
  * Offline-first local database for all app data
+ *
+ * IMPORTANT: When modifying the schema:
+ * 1. Increment the version number
+ * 2. Add a migration in DatabaseMigrations.kt
+ * 3. Add the migration to ALL_MIGRATIONS array
+ * 4. Test the migration thoroughly before release
  */
 @Database(
     entities = [
@@ -45,7 +51,11 @@ abstract class DukaDatabase : RoomDatabase() {
                     DukaDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .fallbackToDestructiveMigration() // For development only
+                    // Add all migrations for proper data preservation
+                    .addMigrations(*DatabaseMigrations.ALL_MIGRATIONS)
+                    // Only allow destructive migration on downgrade (e.g., installing older APK)
+                    // This preserves data during normal upgrades
+                    .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance
                 instance
