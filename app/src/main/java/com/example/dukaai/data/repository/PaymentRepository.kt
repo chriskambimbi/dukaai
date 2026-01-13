@@ -2,6 +2,7 @@ package com.example.dukaai.data.repository
 
 import com.example.dukaai.data.local.dao.PaymentDao
 import com.example.dukaai.data.local.entity.PaymentEntity
+import com.example.dukaai.util.DateUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -51,8 +52,8 @@ class PaymentRepository @Inject constructor(
      * Get today's payments
      */
     fun getTodayPayments(): Flow<List<PaymentEntity>> {
-        val startOfDay = getStartOfDay()
-        val endOfDay = getEndOfDay()
+        val startOfDay = DateUtils.getStartOfDay()
+        val endOfDay = DateUtils.getEndOfDay()
         return paymentDao.getPaymentsByDateRange(startOfDay, endOfDay)
     }
 
@@ -160,24 +161,6 @@ class PaymentRepository @Inject constructor(
                     percentage = (payments.size.toDouble() / allPayments.size) * 100
                 )
             }
-    }
-
-    private fun getStartOfDay(): Long {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        calendar.set(java.util.Calendar.MINUTE, 0)
-        calendar.set(java.util.Calendar.SECOND, 0)
-        calendar.set(java.util.Calendar.MILLISECOND, 0)
-        return calendar.timeInMillis
-    }
-
-    private fun getEndOfDay(): Long {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-        calendar.set(java.util.Calendar.MINUTE, 59)
-        calendar.set(java.util.Calendar.SECOND, 59)
-        calendar.set(java.util.Calendar.MILLISECOND, 999)
-        return calendar.timeInMillis
     }
 }
 

@@ -7,6 +7,7 @@ import com.example.dukaai.data.local.entity.SaleEntity
 import com.example.dukaai.data.repository.ProductRepository
 import com.example.dukaai.data.repository.SaleRepository
 import com.example.dukaai.data.repository.SalesStats
+import com.example.dukaai.util.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -265,8 +266,8 @@ class SaleViewModel @Inject constructor(
     private fun loadSalesStats() {
         viewModelScope.launch {
             try {
-                val startOfDay = getStartOfDay()
-                val endOfDay = getEndOfDay()
+                val startOfDay = DateUtils.getStartOfDay()
+                val endOfDay = DateUtils.getEndOfDay()
                 val stats = saleRepository.getSalesStats(startOfDay, endOfDay)
                 _salesStats.value = stats
             } catch (e: Exception) {
@@ -302,23 +303,5 @@ class SaleViewModel @Inject constructor(
      */
     fun clearError() {
         _error.value = null
-    }
-
-    private fun getStartOfDay(): Long {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        calendar.set(java.util.Calendar.MINUTE, 0)
-        calendar.set(java.util.Calendar.SECOND, 0)
-        calendar.set(java.util.Calendar.MILLISECOND, 0)
-        return calendar.timeInMillis
-    }
-
-    private fun getEndOfDay(): Long {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-        calendar.set(java.util.Calendar.MINUTE, 59)
-        calendar.set(java.util.Calendar.SECOND, 59)
-        calendar.set(java.util.Calendar.MILLISECOND, 999)
-        return calendar.timeInMillis
     }
 }

@@ -7,6 +7,7 @@ import com.example.dukaai.data.local.dao.ProductDao
 import com.example.dukaai.data.local.dao.SaleDao
 import com.example.dukaai.data.local.entity.InventoryLogEntity
 import com.example.dukaai.data.local.entity.SaleEntity
+import com.example.dukaai.util.DateUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -41,8 +42,8 @@ class SaleRepository @Inject constructor(
      * Get today's sales
      */
     fun getTodaySales(): Flow<List<SaleEntity>> {
-        val startOfDay = getStartOfDay()
-        val endOfDay = getEndOfDay()
+        val startOfDay = DateUtils.getStartOfDay()
+        val endOfDay = DateUtils.getEndOfDay()
         return saleDao.getSalesByDateRange(startOfDay, endOfDay)
     }
 
@@ -64,8 +65,8 @@ class SaleRepository @Inject constructor(
      * Get today's revenue
      */
     fun getTodayRevenue(): Flow<Double?> {
-        val startOfDay = getStartOfDay()
-        val endOfDay = getEndOfDay()
+        val startOfDay = DateUtils.getStartOfDay()
+        val endOfDay = DateUtils.getEndOfDay()
         return saleDao.getTotalRevenue(startOfDay, endOfDay)
     }
 
@@ -229,24 +230,6 @@ class SaleRepository @Inject constructor(
             averageSaleValue = if (count > 0) revenue / count else 0.0,
             totalItemsSold = sales.sumOf { it.quantity }
         )
-    }
-
-    private fun getStartOfDay(): Long {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        calendar.set(java.util.Calendar.MINUTE, 0)
-        calendar.set(java.util.Calendar.SECOND, 0)
-        calendar.set(java.util.Calendar.MILLISECOND, 0)
-        return calendar.timeInMillis
-    }
-
-    private fun getEndOfDay(): Long {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-        calendar.set(java.util.Calendar.MINUTE, 59)
-        calendar.set(java.util.Calendar.SECOND, 59)
-        calendar.set(java.util.Calendar.MILLISECOND, 999)
-        return calendar.timeInMillis
     }
 }
 
