@@ -11,6 +11,8 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.MappedByteBuffer
@@ -41,47 +43,52 @@ class TFLiteProductClassifier(
         private const val STD = 127.5f
     }
 
-    override fun initialize() {
-        try {
-            // Load the TFLite model
-            val modelFile: MappedByteBuffer = FileUtil.loadMappedFile(context, modelPath)
-            val options = Interpreter.Options().apply {
-                setNumThreads(numThreads)
-                // Use GPU delegate if available for better performance
-                // addDelegate(GpuDelegate())
+    override suspend fun initialize() {
+        withContext(Dispatchers.IO) {
+            try {
+                // Load the TFLite model
+                val modelFile: MappedByteBuffer = FileUtil.loadMappedFile(context, modelPath)
+                val options = Interpreter.Options().apply {
+                    setNumThreads(numThreads)
+                    // Use GPU delegate if available for better performance
+                    // addDelegate(GpuDelegate())
+                }
+                interpreter = Interpreter(modelFile, options)
+
+                // Get input tensor dimensions
+                val inputShape = interpreter?.getInputTensor(0)?.shape()
+                if (inputShape != null && inputShape.size >= 2) {
+                    inputImageHeight = inputShape[1]
+                    inputImageWidth = inputShape[2]
+                }
+
+                // Load labels
+                labels = loadLabels(labelsPath)
+
+                // Initialize image processor
+                imageProcessor = ImageProcessor.Builder()
+                    .add(ResizeWithCropOrPadOp(inputImageHeight, inputImageWidth))
+                    .add(ResizeOp(inputImageHeight, inputImageWidth, ResizeOp.ResizeMethod.BILINEAR))
+                    .add(NormalizeOp(MEAN, STD))
+                    .build()
+
+                isModelLoaded = true
+                Log.d(TAG, "Model initialized successfully. Input size: ${inputImageWidth}x${inputImageHeight}")
+                Log.d(TAG, "Loaded ${labels.size} labels")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error initializing model", e)
+                isModelLoaded = false
             }
-            interpreter = Interpreter(modelFile, options)
-
-            // Get input tensor dimensions
-            val inputShape = interpreter?.getInputTensor(0)?.shape()
-            if (inputShape != null && inputShape.size >= 2) {
-                inputImageHeight = inputShape[1]
-                inputImageWidth = inputShape[2]
-            }
-
-            // Load labels
-            labels = loadLabels(labelsPath)
-
-            // Initialize image processor
-            imageProcessor = ImageProcessor.Builder()
-                .add(ResizeWithCropOrPadOp(inputImageHeight, inputImageWidth))
-                .add(ResizeOp(inputImageHeight, inputImageWidth, ResizeOp.ResizeMethod.BILINEAR))
-                .add(NormalizeOp(MEAN, STD))
-                .build()
-
-            isModelLoaded = true
-            Log.d(TAG, "Model initialized successfully. Input size: ${inputImageWidth}x${inputImageHeight}")
-            Log.d(TAG, "Loaded ${labels.size} labels")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing model", e)
-            isModelLoaded = false
         }
     }
 
-    override fun classifyProduct(bitmap: Bitmap, maxResults: Int): ClassificationResults {
+    override suspend fun classifyProduct(bitmap: Bitmap, maxResults: Int): ClassificationResults = withContext(Dispatchers.Default) {
         if (!isModelLoaded) {
-            Log.w(TAG, "Model not initialized. Returning empty results.")
-            return ClassificationResults(emptyList(), 0)
+            initialize() // Lazy initialization
+            if (!isModelLoaded) { // Check again after attempting to initialize
+                Log.w(TAG, "Model not initialized. Returning empty results.")
+                return@withContext ClassificationResults(emptyList(), 0)
+            }
         }
 
         val startTime = System.currentTimeMillis()
@@ -99,10 +106,10 @@ class TFLiteProductClassifier(
             val results = processOutputArray(outputArray[0], maxResults)
             val processingTime = System.currentTimeMillis() - startTime
 
-            return ClassificationResults(results, processingTime)
+            return@withContext ClassificationResults(results, processingTime)
         } catch (e: Exception) {
             Log.e(TAG, "Error during classification", e)
-            return ClassificationResults(emptyList(), System.currentTimeMillis() - startTime)
+            return@withContext ClassificationResults(emptyList(), System.currentTimeMillis() - startTime)
         }
     }
 

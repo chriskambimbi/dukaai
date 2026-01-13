@@ -5,6 +5,7 @@ import com.example.dukaai.data.local.dao.ProductDao
 import com.example.dukaai.data.local.entity.InventoryLogEntity
 import com.example.dukaai.data.local.entity.ProductEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,24 +46,21 @@ class ProductRepository @Inject constructor(
     }
 
     suspend fun updateStock(productId: String, newStock: Int, reason: String? = null) {
-        val product = productDao.getProductById(productId)
-        product.collect { p ->
-            p?.let {
-                // Log the inventory change
-                val log = InventoryLogEntity(
-                    productId = productId,
-                    actionType = "ADJUST",
-                    quantityChange = newStock - it.currentStock,
-                    previousStock = it.currentStock,
-                    newStock = newStock,
-                    reason = reason
-                )
-                inventoryLogDao.insertLog(log)
+        val product = productDao.getProductById(productId).firstOrNull() ?: return
 
-                // Update the stock
-                productDao.updateStock(productId, newStock)
-            }
-        }
+        // Log the inventory change
+        val log = InventoryLogEntity(
+            productId = productId,
+            actionType = "ADJUST",
+            quantityChange = newStock - product.currentStock,
+            previousStock = product.currentStock,
+            newStock = newStock,
+            reason = reason
+        )
+        inventoryLogDao.insertLog(log)
+
+        // Update the stock
+        productDao.updateStock(productId, newStock)
     }
 
     suspend fun deleteProduct(product: ProductEntity) {

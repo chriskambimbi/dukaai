@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.dukaai.data.local.entity.ProductEntity
 import com.example.dukaai.data.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -231,6 +232,7 @@ class ProductViewModel @Inject constructor(
 
     /**
      * Get filtered products (combining search and category filter)
+     * Uses Dispatchers.Default to avoid blocking UI thread during filtering
      */
     val filteredProducts: StateFlow<List<ProductEntity>> = combine(
         products,
@@ -254,9 +256,11 @@ class ProductViewModel @Inject constructor(
         }
 
         filtered
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    }
+        .flowOn(Dispatchers.Default) // Perform filtering on background thread
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 }
