@@ -13,11 +13,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dukaai.ui.navigation.BottomNavigationBar
 import com.example.dukaai.ui.navigation.DukaNavGraph
 import com.example.dukaai.ui.theme.DukaAITheme
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Main Activity for Duka.AI
  * Sets up the navigation and theme
  */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
