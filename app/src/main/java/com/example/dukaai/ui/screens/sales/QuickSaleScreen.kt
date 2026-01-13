@@ -128,41 +128,42 @@ fun QuickSaleScreen(
 
             // Product list
             if (isLoading && products.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             } else if (filteredProducts.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (searchQuery.isBlank()) "No products available" else "No products found",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (searchQuery.isBlank()) "No products available" else "No products found",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             } else {
-                items(filteredProducts) { product ->
-                    ProductQuickSaleCard(
-                        product = product,
-                        onClick = {
-                            selectedProduct = product
-                            quantity = 1
-                            showConfirmation = true
-                        }
-                    )
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(filteredProducts) { product ->
+                        ProductQuickSaleCard(
+                            product = product,
+                            onClick = {
+                                selectedProduct = product
+                                quantity = 1
+                                showConfirmation = true
+                            }
+                        )
+                    }
                 }
             }
         }

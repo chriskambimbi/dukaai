@@ -17,9 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import org.json.JSONObject
 import java.io.File
 import javax.inject.Inject
 
@@ -216,17 +214,17 @@ class SettingsViewModel @Inject constructor(
                 val sales = database.saleDao().getAllSalesSync()
                 val credits = database.creditLedgerDao().getAllCreditsSync()
 
-                val backupData = BackupData(
-                    version = 1,
-                    timestamp = timestamp,
-                    productsCount = products.size,
-                    customersCount = customers.size,
-                    salesCount = sales.size,
-                    creditsCount = credits.size
-                )
+                val backupJson = JSONObject().apply {
+                    put("version", 1)
+                    put("timestamp", timestamp)
+                    put("productsCount", products.size)
+                    put("customersCount", customers.size)
+                    put("salesCount", sales.size)
+                    put("creditsCount", credits.size)
+                }
 
                 // Write summary to file (full backup would include actual data)
-                backupFile.writeText(Json.encodeToString(backupData))
+                backupFile.writeText(backupJson.toString())
 
                 _isLoading.value = false
                 _operationResult.value = OperationResult.Success("Backup created: ${backupFile.name}")
@@ -253,16 +251,19 @@ class SettingsViewModel @Inject constructor(
 
                 // Read and validate backup
                 val backupContent = backupFile.readText()
-                val backupData = Json.decodeFromString<BackupData>(backupContent)
+                val backupJson = JSONObject(backupContent)
+                val productsCount = backupJson.getInt("productsCount")
+                val customersCount = backupJson.getInt("customersCount")
+                val salesCount = backupJson.getInt("salesCount")
 
                 // In a real implementation, this would restore the actual data
                 // For now, we just validate the backup format
 
                 _isLoading.value = false
                 _operationResult.value = OperationResult.Success(
-                    "Restore validated: ${backupData.productsCount} products, " +
-                    "${backupData.customersCount} customers, " +
-                    "${backupData.salesCount} sales"
+                    "Restore validated: $productsCount products, " +
+                    "$customersCount customers, " +
+                    "$salesCount sales"
                 )
                 onComplete(true, "Data restored successfully")
             } catch (e: Exception) {
@@ -322,15 +323,3 @@ sealed class OperationResult {
     data class Error(val message: String) : OperationResult()
 }
 
-/**
- * Data class for backup metadata
- */
-@Serializable
-data class BackupData(
-    val version: Int,
-    val timestamp: Long,
-    val productsCount: Int,
-    val customersCount: Int,
-    val salesCount: Int,
-    val creditsCount: Int
-)
