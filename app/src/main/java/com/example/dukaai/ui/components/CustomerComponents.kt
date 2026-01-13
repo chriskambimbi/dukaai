@@ -445,40 +445,76 @@ private fun PaymentSummaryCard(
 
 /**
  * Dialog for sending WhatsApp payment reminder
+ *
+ * @param customerName Name of the customer
+ * @param totalDebt Total amount owed by the customer
+ * @param phoneNumber Customer's phone number
+ * @param businessName Name of the business (default: "Duka.AI")
+ * @param onDismiss Callback when dialog is dismissed
+ * @param onSend Callback when message is sent (receives the message text)
  */
 @Composable
 fun WhatsAppReminderDialog(
     customerName: String,
     totalDebt: Double,
     phoneNumber: String,
+    businessName: String = "Duka.AI",
     onDismiss: () -> Unit,
-    onSend: () -> Unit
+    onSend: (String) -> Unit
 ) {
-    val message = "Hello $customerName, friendly reminder that you have a balance of K ${String.format("%.2f", totalDebt)} at Duka.AI. Thank you!"
+    var customMessage by remember {
+        mutableStateOf(
+            "Hello $customerName, friendly reminder that you have a balance of K ${String.format("%.2f", totalDebt)} at $businessName. Thank you for your continued patronage!"
+        )
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Message, contentDescription = null) },
         title = { Text("Send WhatsApp Reminder") },
         text = {
-            Column {
-                Text("To: $phoneNumber")
-                Spacer(modifier = Modifier.height(12.dp))
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Phone,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
-                ) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = message,
-                        modifier = Modifier.padding(12.dp),
+                        text = phoneNumber,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+
+                OutlinedTextField(
+                    value = customMessage,
+                    onValueChange = { customMessage = it },
+                    label = { Text("Message") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    maxLines = 5
+                )
+
+                Text(
+                    text = "This will open WhatsApp with the message ready to send.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
             }
         },
         confirmButton = {
-            Button(onClick = onSend) {
+            Button(
+                onClick = { onSend(customMessage) },
+                enabled = customMessage.isNotBlank() && phoneNumber.isNotBlank()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Send via WhatsApp")
             }
         },

@@ -22,6 +22,9 @@ interface CustomerDao {
     @Query("SELECT * FROM customers ORDER BY name ASC")
     fun getAllCustomers(): Flow<List<CustomerEntity>>
 
+    @Query("SELECT * FROM customers ORDER BY name ASC")
+    suspend fun getAllCustomersSync(): List<CustomerEntity>
+
     /**
      * Efficient single-query method to get all customers with outstanding credit.
      * Uses LEFT JOIN with GROUP BY to calculate total debt in one database call.

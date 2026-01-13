@@ -13,6 +13,9 @@ interface SaleDao {
     @Query("SELECT * FROM sales ORDER BY timestamp DESC")
     fun getAllSales(): Flow<List<SaleEntity>>
 
+    @Query("SELECT * FROM sales ORDER BY timestamp DESC")
+    suspend fun getAllSalesSync(): List<SaleEntity>
+
     @Query("SELECT * FROM sales WHERE id = :saleId")
     fun getSaleById(saleId: String): Flow<SaleEntity?>
 

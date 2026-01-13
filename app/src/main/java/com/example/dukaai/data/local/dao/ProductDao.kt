@@ -13,6 +13,9 @@ interface ProductDao {
     @Query("SELECT * FROM products ORDER BY name ASC")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
+    @Query("SELECT * FROM products ORDER BY name ASC")
+    suspend fun getAllProductsSync(): List<ProductEntity>
+
     @Query("SELECT * FROM products WHERE id = :productId")
     fun getProductById(productId: String): Flow<ProductEntity?>
 

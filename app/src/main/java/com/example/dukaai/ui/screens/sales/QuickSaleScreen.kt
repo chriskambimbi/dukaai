@@ -12,9 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dukaai.data.local.entity.ProductEntity
 import com.example.dukaai.ui.components.SearchBar
 import com.example.dukaai.ui.navigation.Screen
+import com.example.dukaai.ui.viewmodel.ProductViewModel
+import com.example.dukaai.ui.viewmodel.SaleViewModel
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 
@@ -26,29 +30,34 @@ import androidx.compose.ui.text.input.ImeAction
 @Composable
 fun QuickSaleScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    productViewModel: ProductViewModel = hiltViewModel(),
+    saleViewModel: SaleViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedProduct by remember { mutableStateOf<SaleProduct?>(null) }
+    var selectedProduct by remember { mutableStateOf<ProductEntity?>(null) }
     var quantity by remember { mutableStateOf(1) }
     var showConfirmation by remember { mutableStateOf(false) }
     var saleType by remember { mutableStateOf(SaleType.CASH) }
+    var showSuccessSnackbar by remember { mutableStateOf(false) }
 
-    // Sample products (will be replaced with ViewModel)
-    val sampleProducts = remember {
-        listOf(
-            SaleProduct("1", "Coca-Cola 500ml", "Beverages", 60, 10.0),
-            SaleProduct("2", "Mosi Lager 500ml", "Beverages", 45, 12.0),
-            SaleProduct("3", "Boom Detergent 1kg", "Toiletries", 15, 22.0),
-            SaleProduct("4", "Bread (Loaf)", "Food", 8, 5.0),
-            SaleProduct("5", "Sugar 2kg", "Food", 25, 30.0),
-            SaleProduct("6", "Fanta Orange 500ml", "Beverages", 55, 10.0),
-            SaleProduct("7", "Sprite 500ml", "Beverages", 55, 10.0)
-        )
+    // Get products from ViewModel
+    val products by productViewModel.products.collectAsState()
+    val isLoading by productViewModel.isLoading.collectAsState()
+    val saleCompleted by saleViewModel.saleCompleted.collectAsState()
+    val saleError by saleViewModel.error.collectAsState()
+
+    // Filter products based on search query
+    val filteredProducts = products.filter {
+        searchQuery.isBlank() || it.name.contains(searchQuery, ignoreCase = true)
     }
 
-    val filteredProducts = sampleProducts.filter {
-        it.name.contains(searchQuery, ignoreCase = true)
+    // Handle sale completed
+    LaunchedEffect(saleCompleted) {
+        if (saleCompleted) {
+            showSuccessSnackbar = true
+            saleViewModel.clearCart()
+        }
     }
 
     Scaffold(
@@ -118,9 +127,33 @@ fun QuickSaleScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Product list
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            if (isLoading && products.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            } else if (filteredProducts.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (searchQuery.isBlank()) "No products available" else "No products found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
                 items(filteredProducts) { product ->
                     ProductQuickSaleCard(
                         product = product,
@@ -132,6 +165,14 @@ fun QuickSaleScreen(
                     )
                 }
             }
+        }
+    }
+
+    // Success snackbar
+    if (showSuccessSnackbar) {
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(2000)
+            showSuccessSnackbar = false
         }
     }
 
@@ -148,10 +189,17 @@ fun QuickSaleScreen(
                 selectedProduct = null
             },
             onConfirm = {
-                // Handle sale
+                // Record the sale
+                saleViewModel.addToCart(selectedProduct!!, quantity)
+                if (saleType == SaleType.CASH) {
+                    saleViewModel.completeCashSale()
+                } else {
+                    // For credit sales, would need to select customer first
+                    // For now, complete as cash
+                    saleViewModel.completeCashSale()
+                }
                 showConfirmation = false
                 selectedProduct = null
-                // Show success message
             }
         )
     }
@@ -159,7 +207,7 @@ fun QuickSaleScreen(
 
 @Composable
 private fun ProductQuickSaleCard(
-    product: SaleProduct,
+    product: ProductEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -199,9 +247,9 @@ private fun ProductQuickSaleCard(
                     )
 
                     Text(
-                        text = "Stock: ${product.stock}",
+                        text = "Stock: ${product.currentStock}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (product.stock <= 10) {
+                        color = if (product.currentStock <= product.minStockThreshold) {
                             com.example.dukaai.ui.theme.WarningYellow
                         } else {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -212,7 +260,7 @@ private fun ProductQuickSaleCard(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "K ${String.format("%.2f", product.price)}",
+                    text = "K ${String.format("%.2f", product.sellingPrice)}",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -224,7 +272,7 @@ private fun ProductQuickSaleCard(
 
 @Composable
 private fun SaleConfirmationDialog(
-    product: SaleProduct,
+    product: ProductEntity,
     quantity: Int,
     saleType: SaleType,
     onQuantityChange: (Int) -> Unit,
@@ -232,8 +280,8 @@ private fun SaleConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    val totalAmount = product.price * quantity
-    val remainingStock = product.stock - quantity
+    val totalAmount = product.sellingPrice * quantity
+    val remainingStock = product.currentStock - quantity
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -259,7 +307,7 @@ private fun SaleConfirmationDialog(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Unit price: K ${String.format("%.2f", product.price)}",
+                            text = "Unit price: K ${String.format("%.2f", product.sellingPrice)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -294,8 +342,8 @@ private fun SaleConfirmationDialog(
                         )
 
                         IconButton(
-                            onClick = { if (quantity < product.stock) onQuantityChange(quantity + 1) },
-                            enabled = quantity < product.stock
+                            onClick = { if (quantity < product.currentStock) onQuantityChange(quantity + 1) },
+                            enabled = quantity < product.currentStock
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Increase")
                         }
@@ -402,7 +450,7 @@ private fun SaleConfirmationDialog(
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                enabled = quantity > 0 && quantity <= product.stock
+                enabled = quantity > 0 && quantity <= product.currentStock
             ) {
                 Text("Confirm Sale")
             }
@@ -414,15 +462,6 @@ private fun SaleConfirmationDialog(
         }
     )
 }
-
-// Data classes
-private data class SaleProduct(
-    val id: String,
-    val name: String,
-    val category: String,
-    val stock: Int,
-    val price: Double
-)
 
 private enum class SaleType {
     CASH, CREDIT

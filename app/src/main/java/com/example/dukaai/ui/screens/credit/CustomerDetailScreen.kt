@@ -1,5 +1,6 @@
 package com.example.dukaai.ui.screens.credit
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -16,6 +18,7 @@ import androidx.navigation.NavController
 import com.example.dukaai.ui.components.*
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.viewmodel.CreditViewModel
+import com.example.dukaai.util.WhatsAppHelper
 
 /**
  * Customer Detail Screen
@@ -39,6 +42,7 @@ fun CustomerDetailScreen(
     val error by viewModel.error.collectAsState()
 
     var showWhatsAppDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Loading state
     if (isLoading && customer == null) {
@@ -107,7 +111,24 @@ fun CustomerDetailScreen(
             totalDebt = totalDebt,
             phoneNumber = currentCustomer.phoneNumber ?: "",
             onDismiss = { showWhatsAppDialog = false },
-            onSend = { showWhatsAppDialog = false }
+            onSend = { message ->
+                val phoneNumber = currentCustomer.phoneNumber ?: ""
+                if (phoneNumber.isNotBlank()) {
+                    val success = WhatsAppHelper.sendWhatsAppMessage(
+                        context = context,
+                        phoneNumber = phoneNumber,
+                        message = message
+                    )
+                    if (!success) {
+                        Toast.makeText(
+                            context,
+                            "Could not open WhatsApp. Please ensure it is installed.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+                showWhatsAppDialog = false
+            }
         )
     }
 }

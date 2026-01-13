@@ -13,6 +13,9 @@ interface CreditLedgerDao {
     @Query("SELECT * FROM credit_ledger ORDER BY createdAt DESC")
     fun getAllCreditRecords(): Flow<List<CreditLedgerEntity>>
 
+    @Query("SELECT * FROM credit_ledger ORDER BY createdAt DESC")
+    suspend fun getAllCreditsSync(): List<CreditLedgerEntity>
+
     @Query("SELECT * FROM credit_ledger WHERE id = :creditId")
     fun getCreditById(creditId: String): Flow<CreditLedgerEntity?>
 
