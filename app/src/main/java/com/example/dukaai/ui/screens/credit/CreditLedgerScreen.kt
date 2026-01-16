@@ -407,11 +407,12 @@ private fun ModernCreditSummaryCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = SlatePrimaryDark
+            containerColor = SlateSurface // White background
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        border = BorderStroke(1.dp, SlateBorder), // Subtle border
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -420,7 +421,7 @@ private fun ModernCreditSummaryCard(
                 text = "TOTAL OUTSTANDING",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.White.copy(alpha = 0.7f),
+                color = SlateTextTertiary,
                 letterSpacing = 1.sp
             )
 
@@ -430,7 +431,7 @@ private fun ModernCreditSummaryCard(
                 text = "K ${String.format("%.2f", totalOutstanding)}",
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = SlateTextPrimary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -448,12 +449,12 @@ private fun ModernCreditSummaryCard(
                         imageVector = Icons.Outlined.People,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = Color.White.copy(alpha = 0.7f)
+                        tint = SlateTextSecondary
                     )
                     Text(
                         text = "$customerCount customers",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.9f)
+                        color = SlateTextSecondary
                     )
                 }
 
@@ -482,13 +483,13 @@ private fun ModernCreditSummaryCard(
             if (overdueWithPhoneCount > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedButton(
+                Button(
                     onClick = onSendAllReminders,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = EmeraldAccent,
                         contentColor = Color.White
                     ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Icon(
