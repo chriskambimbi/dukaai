@@ -1,10 +1,13 @@
 package com.example.dukaai.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +23,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,14 +37,15 @@ import com.example.dukaai.ui.theme.*
 enum class TimePeriod(val label: String) {
     TODAY("Today"),
     THIS_WEEK("This Week"),
-    THIS_MONTH("This Month")
+    THIS_MONTH("This Month"),
+    CUSTOM("Custom")
 }
 
 /**
  * Insight severity types
  */
 enum class InsightType {
-    INFO, WARNING, SUCCESS
+    INFO, WARNING, SUCCESS, AI
 }
 
 /**
@@ -85,17 +91,30 @@ data class InsightItem(
  */
 data class ChartDataPoint(
     val label: String,
-    val value: Float
+    val value: Float,
+    val comparisonValue: Float? = null
+)
+
+/**
+ * Data class for metric breakdown details
+ */
+data class MetricBreakdown(
+    val label: String,
+    val value: String,
+    val percentage: Float? = null
 )
 
 // ============================================
 // Modern Segmented Control for Time Period
+// With Custom Date Range Option
 // ============================================
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernPeriodSelector(
     selectedPeriod: TimePeriod,
     onPeriodSelected: (TimePeriod) -> Unit,
+    onCustomDateClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -107,9 +126,11 @@ fun ModernPeriodSelector(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(4.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            TimePeriod.entries.forEach { period ->
+            // Standard periods (excluding CUSTOM)
+            TimePeriod.entries.filter { it != TimePeriod.CUSTOM }.forEach { period ->
                 val isSelected = selectedPeriod == period
 
                 Surface(
@@ -120,7 +141,7 @@ fun ModernPeriodSelector(
                     shadowElevation = if (isSelected) 2.dp else 0.dp
                 ) {
                     Row(
-                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
+                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -128,16 +149,44 @@ fun ModernPeriodSelector(
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(14.dp),
                                 tint = EmeraldAccent
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
                             text = period.label,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             color = if (isSelected) SlateTextPrimary else SlateTextSecondary
+                        )
+                    }
+                }
+            }
+
+            // Custom date button with calendar icon
+            if (onCustomDateClick != null) {
+                val isCustomSelected = selectedPeriod == TimePeriod.CUSTOM
+
+                Surface(
+                    onClick = {
+                        onCustomDateClick()
+                        onPeriodSelected(TimePeriod.CUSTOM)
+                    },
+                    modifier = Modifier.padding(start = 4.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (isCustomSelected) SlateSurface else Color.Transparent,
+                    shadowElevation = if (isCustomSelected) 2.dp else 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.CalendarMonth,
+                            contentDescription = "Custom date range",
+                            modifier = Modifier.size(18.dp),
+                            tint = if (isCustomSelected) EmeraldAccent else SlateTextSecondary
                         )
                     }
                 }
@@ -147,20 +196,26 @@ fun ModernPeriodSelector(
 }
 
 // ============================================
-// Key Metric Summary Card
+// Expandable Key Metric Summary Card
 // ============================================
 
 @Composable
-fun MetricSummaryCard(
+fun ExpandableMetricCard(
     title: String,
     value: String,
     change: String?,
     isPositive: Boolean = true,
     icon: ImageVector,
     iconColor: Color,
+    breakdown: List<MetricBreakdown>? = null,
+    infoTooltip: String? = null,
     modifier: Modifier = Modifier
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var showTooltip by remember { mutableStateOf(false) }
+
     Card(
+        onClick = { if (breakdown != null) isExpanded = !isExpanded },
         modifier = modifier
             .border(
                 width = 1.dp,
@@ -181,26 +236,78 @@ fun MetricSummaryCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = SlateTextSecondary,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(iconColor.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = iconColor
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = SlateTextSecondary,
+                        fontWeight = FontWeight.Medium
                     )
+
+                    // Info tooltip icon
+                    if (infoTooltip != null) {
+                        Box {
+                            IconButton(
+                                onClick = { showTooltip = !showTooltip },
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.HelpOutline,
+                                    contentDescription = "Info",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = SlateTextTertiary
+                                )
+                            }
+
+                            // Tooltip dropdown
+                            DropdownMenu(
+                                expanded = showTooltip,
+                                onDismissRequest = { showTooltip = false }
+                            ) {
+                                Text(
+                                    text = infoTooltip,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .widthIn(max = 200.dp),
+                                    color = SlateTextPrimary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(iconColor.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = iconColor
+                        )
+                    }
+
+                    // Expand indicator
+                    if (breakdown != null) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isExpanded) "Collapse" else "Expand",
+                            modifier = Modifier.size(20.dp),
+                            tint = SlateTextTertiary
+                        )
+                    }
                 }
             }
 
@@ -233,28 +340,107 @@ fun MetricSummaryCard(
                     )
                 }
             }
+
+            // Expanded breakdown section
+            AnimatedVisibility(
+                visible = isExpanded && breakdown != null,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier.padding(top = 12.dp)
+                ) {
+                    HorizontalDivider(color = SlateBorder)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    breakdown?.forEach { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = item.label,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = SlateTextSecondary
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = item.value,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = SlateTextPrimary
+                                )
+                                item.percentage?.let {
+                                    Text(
+                                        text = "(${String.format("%.0f", it * 100)}%)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = SlateTextTertiary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
+// Legacy wrapper for backward compatibility
+@Composable
+fun MetricSummaryCard(
+    title: String,
+    value: String,
+    change: String?,
+    isPositive: Boolean = true,
+    icon: ImageVector,
+    iconColor: Color,
+    modifier: Modifier = Modifier
+) {
+    ExpandableMetricCard(
+        title = title,
+        value = value,
+        change = change,
+        isPositive = isPositive,
+        icon = icon,
+        iconColor = iconColor,
+        breakdown = null,
+        infoTooltip = null,
+        modifier = modifier
+    )
+}
+
 // ============================================
-// Simple Line Chart with Canvas
+// Enhanced Line Chart with Y-axis, Interaction & Comparison
 // ============================================
 
 @Composable
-fun SimpleLineChart(
+fun EnhancedLineChart(
     dataPoints: List<ChartDataPoint>,
     modifier: Modifier = Modifier,
     lineColor: Color = EmeraldAccent,
+    comparisonLineColor: Color = SlateTextTertiary,
     fillColor: Color = EmeraldAccent.copy(alpha = 0.2f),
-    showLabels: Boolean = true
+    showComparison: Boolean = true,
+    showYAxis: Boolean = true,
+    yAxisLabel: String = "Revenue (K)",
+    onDataPointTap: ((ChartDataPoint) -> Unit)? = null
 ) {
     if (dataPoints.isEmpty()) return
 
-    val maxValue = dataPoints.maxOfOrNull { it.value } ?: 1f
+    val maxValue = maxOf(
+        dataPoints.maxOfOrNull { it.value } ?: 1f,
+        dataPoints.maxOfOrNull { it.comparisonValue ?: 0f } ?: 1f
+    )
     val normalizedPoints = dataPoints.map { it.value / maxValue }
+    val normalizedComparison = dataPoints.map { (it.comparisonValue ?: 0f) / maxValue }
 
-    // Animate chart appearance
+    var selectedPointIndex by remember { mutableStateOf<Int?>(null) }
     var animationProgress by remember { mutableFloatStateOf(0f) }
     val animatedProgress by animateFloatAsState(
         targetValue = animationProgress,
@@ -267,125 +453,290 @@ fun SimpleLineChart(
     }
 
     Column(modifier = modifier) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-        ) {
-            val width = size.width
-            val height = size.height
-            val padding = 40f
-            val chartWidth = width - padding * 2
-            val chartHeight = height - padding
-
-            if (normalizedPoints.size < 2) return@Canvas
-
-            val stepX = chartWidth / (normalizedPoints.size - 1)
-
-            // Create points
-            val points = normalizedPoints.mapIndexed { index, value ->
-                Offset(
-                    x = padding + index * stepX,
-                    y = padding + chartHeight * (1 - value * animatedProgress)
-                )
-            }
-
-            // Draw gradient fill
-            val fillPath = Path().apply {
-                moveTo(points.first().x, height - padding)
-                points.forEach { point ->
-                    lineTo(point.x, point.y)
-                }
-                lineTo(points.last().x, height - padding)
-                close()
-            }
-
-            drawPath(
-                path = fillPath,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        fillColor,
-                        fillColor.copy(alpha = 0.05f)
-                    ),
-                    startY = 0f,
-                    endY = height
-                )
+        // Y-axis label
+        if (showYAxis) {
+            Text(
+                text = yAxisLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = SlateTextTertiary,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
+        }
 
-            // Draw smooth line using Bezier curves
-            val linePath = Path().apply {
-                moveTo(points.first().x, points.first().y)
-
-                for (i in 0 until points.size - 1) {
-                    val p0 = points[i]
-                    val p1 = points[i + 1]
-
-                    val controlX1 = p0.x + (p1.x - p0.x) / 3
-                    val controlX2 = p0.x + 2 * (p1.x - p0.x) / 3
-
-                    cubicTo(
-                        controlX1, p0.y,
-                        controlX2, p1.y,
-                        p1.x, p1.y
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // Y-axis values
+            if (showYAxis) {
+                Column(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(180.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = formatChartValue(maxValue),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SlateTextTertiary
+                    )
+                    Text(
+                        text = formatChartValue(maxValue * 0.5f),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SlateTextTertiary
+                    )
+                    Text(
+                        text = "0",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SlateTextTertiary
                     )
                 }
             }
 
-            drawPath(
-                path = linePath,
-                color = lineColor,
-                style = Stroke(
-                    width = 3.dp.toPx(),
-                    cap = StrokeCap.Round,
-                    join = StrokeJoin.Round
-                )
-            )
+            // Chart canvas
+            Canvas(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(180.dp)
+                    .pointerInput(dataPoints) {
+                        detectTapGestures { offset ->
+                            val chartWidth = size.width.toFloat()
+                            val stepX = chartWidth / (dataPoints.size - 1)
+                            val tappedIndex = ((offset.x / stepX) + 0.5f).toInt()
+                                .coerceIn(0, dataPoints.size - 1)
+                            selectedPointIndex = tappedIndex
+                            onDataPointTap?.invoke(dataPoints[tappedIndex])
+                        }
+                    }
+            ) {
+                val width = size.width
+                val height = size.height
+                val padding = 10f
+                val chartHeight = height - padding * 2
 
-            // Draw data points
-            points.forEach { point ->
-                drawCircle(
-                    color = SlateSurface,
-                    radius = 6.dp.toPx(),
-                    center = point
+                if (normalizedPoints.size < 2) return@Canvas
+
+                val stepX = width / (normalizedPoints.size - 1)
+
+                // Draw grid lines
+                for (i in 0..4) {
+                    val y = padding + (chartHeight * i / 4)
+                    drawLine(
+                        color = SlateBorder,
+                        start = Offset(0f, y),
+                        end = Offset(width, y),
+                        strokeWidth = 1.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
+                    )
+                }
+
+                // Create main line points
+                val points = normalizedPoints.mapIndexed { index, value ->
+                    Offset(
+                        x = index * stepX,
+                        y = padding + chartHeight * (1 - value * animatedProgress)
+                    )
+                }
+
+                // Create comparison line points
+                val comparisonPoints = if (showComparison && normalizedComparison.any { it > 0 }) {
+                    normalizedComparison.mapIndexed { index, value ->
+                        Offset(
+                            x = index * stepX,
+                            y = padding + chartHeight * (1 - value * animatedProgress)
+                        )
+                    }
+                } else null
+
+                // Draw comparison line first (behind main line)
+                comparisonPoints?.let { compPoints ->
+                    val compPath = Path().apply {
+                        moveTo(compPoints.first().x, compPoints.first().y)
+                        for (i in 0 until compPoints.size - 1) {
+                            val p0 = compPoints[i]
+                            val p1 = compPoints[i + 1]
+                            val controlX1 = p0.x + (p1.x - p0.x) / 3
+                            val controlX2 = p0.x + 2 * (p1.x - p0.x) / 3
+                            cubicTo(controlX1, p0.y, controlX2, p1.y, p1.x, p1.y)
+                        }
+                    }
+                    drawPath(
+                        path = compPath,
+                        color = comparisonLineColor,
+                        style = Stroke(
+                            width = 2.dp.toPx(),
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 4f))
+                        )
+                    )
+                }
+
+                // Draw gradient fill for main line
+                val fillPath = Path().apply {
+                    moveTo(points.first().x, height - padding)
+                    points.forEach { point -> lineTo(point.x, point.y) }
+                    lineTo(points.last().x, height - padding)
+                    close()
+                }
+
+                drawPath(
+                    path = fillPath,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(fillColor, fillColor.copy(alpha = 0.05f)),
+                        startY = 0f,
+                        endY = height
+                    )
                 )
-                drawCircle(
+
+                // Draw smooth main line
+                val linePath = Path().apply {
+                    moveTo(points.first().x, points.first().y)
+                    for (i in 0 until points.size - 1) {
+                        val p0 = points[i]
+                        val p1 = points[i + 1]
+                        val controlX1 = p0.x + (p1.x - p0.x) / 3
+                        val controlX2 = p0.x + 2 * (p1.x - p0.x) / 3
+                        cubicTo(controlX1, p0.y, controlX2, p1.y, p1.x, p1.y)
+                    }
+                }
+
+                drawPath(
+                    path = linePath,
                     color = lineColor,
-                    radius = 4.dp.toPx(),
-                    center = point
+                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
                 )
+
+                // Draw data points
+                points.forEachIndexed { index, point ->
+                    val isSelected = selectedPointIndex == index
+                    val pointRadius = if (isSelected) 8.dp.toPx() else 6.dp.toPx()
+
+                    drawCircle(color = SlateSurface, radius = pointRadius, center = point)
+                    drawCircle(
+                        color = if (isSelected) EmeraldDark else lineColor,
+                        radius = pointRadius - 2.dp.toPx(),
+                        center = point
+                    )
+                }
             }
         }
 
         // X-axis labels
-        if (showLabels && dataPoints.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = if (showYAxis) 40.dp else 0.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            dataPoints.forEachIndexed { index, point ->
+                Text(
+                    text = point.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (selectedPointIndex == index) EmeraldAccent else SlateTextTertiary,
+                    fontWeight = if (selectedPointIndex == index) FontWeight.Bold else FontWeight.Normal,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
+                )
+            }
+        }
+
+        // Legend
+        if (showComparison && dataPoints.any { it.comparisonValue != null }) {
+            Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                dataPoints.forEach { point ->
-                    Text(
-                        text = point.label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = SlateTextTertiary,
-                        modifier = Modifier.weight(1f),
-                        maxLines = 1
-                    )
+                ChartLegendItem(color = lineColor, label = "This period")
+                Spacer(modifier = Modifier.width(16.dp))
+                ChartLegendItem(color = comparisonLineColor, label = "Previous period", isDashed = true)
+            }
+        }
+
+        // Selected point details
+        selectedPointIndex?.let { index ->
+            val selectedPoint = dataPoints[index]
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = EmeraldAccent.copy(alpha = 0.1f)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = selectedPoint.label,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SlateTextPrimary
+                        )
+                        Text(
+                            text = "K ${formatChartValue(selectedPoint.value)}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = EmeraldAccent
+                        )
+                    }
+                    selectedPoint.comparisonValue?.let { comp ->
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "vs Previous",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = SlateTextTertiary
+                            )
+                            Text(
+                                text = "K ${formatChartValue(comp)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = SlateTextSecondary
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+// Legacy wrapper
+@Composable
+fun SimpleLineChart(
+    dataPoints: List<ChartDataPoint>,
+    modifier: Modifier = Modifier,
+    lineColor: Color = EmeraldAccent,
+    fillColor: Color = EmeraldAccent.copy(alpha = 0.2f),
+    showLabels: Boolean = true
+) {
+    EnhancedLineChart(
+        dataPoints = dataPoints,
+        modifier = modifier,
+        lineColor = lineColor,
+        fillColor = fillColor,
+        showComparison = false,
+        showYAxis = false
+    )
+}
+
 // ============================================
-// Revenue Trend Chart Card
+// Enhanced Revenue Trend Chart Card
 // ============================================
 
 @Composable
-fun RevenueTrendCard(
+fun EnhancedRevenueTrendCard(
     dataPoints: List<ChartDataPoint>,
+    showComparison: Boolean = true,
+    onExportClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var selectedPoint by remember { mutableStateOf<ChartDataPoint?>(null) }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -401,20 +752,200 @@ fun RevenueTrendCard(
         Column(
             modifier = Modifier.padding(20.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Revenue Trend",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = SlateTextPrimary
+                )
+
+                if (onExportClick != null) {
+                    IconButton(
+                        onClick = onExportClick,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Share,
+                            contentDescription = "Export",
+                            tint = SlateTextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
-                text = "Revenue Trend",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = SlateTextPrimary
+                text = "Tap on data points to see details",
+                style = MaterialTheme.typography.bodySmall,
+                color = SlateTextTertiary
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            SimpleLineChart(
+            EnhancedLineChart(
                 dataPoints = dataPoints,
+                showComparison = showComparison,
+                showYAxis = true,
+                yAxisLabel = "Revenue (K)",
+                onDataPointTap = { selectedPoint = it },
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+// Legacy wrapper
+@Composable
+fun RevenueTrendCard(
+    dataPoints: List<ChartDataPoint>,
+    modifier: Modifier = Modifier
+) {
+    EnhancedRevenueTrendCard(
+        dataPoints = dataPoints,
+        showComparison = false,
+        onExportClick = null,
+        modifier = modifier
+    )
+}
+
+// ============================================
+// AI Insight Card
+// ============================================
+
+@Composable
+fun AIInsightCard(
+    title: String,
+    description: String,
+    metric: String? = null,
+    metricLabel: String? = null,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = EmeraldAccent.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = EmeraldAccent.copy(alpha = 0.08f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(EmeraldAccent.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = EmeraldAccent,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = SlateTextPrimary
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = EmeraldAccent.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = "AI",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = EmeraldAccent,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SlateTextSecondary
+                )
+
+                if (metric != null && metricLabel != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = metric,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = EmeraldAccent
+                        )
+                        Text(
+                            text = metricLabel,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SlateTextTertiary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ============================================
+// Export/Share Button Component
+// ============================================
+
+@Composable
+fun ExportReportButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = EmeraldAccent
+        ),
+        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldAccent.copy(alpha = 0.5f))
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.FileDownload,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Export Report",
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
@@ -451,15 +982,11 @@ fun TopSellerRow(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rank badge
             RankBadge(rank = rank)
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Product info and progress bar
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = productName,
                     style = MaterialTheme.typography.titleSmall,
@@ -479,7 +1006,6 @@ fun TopSellerRow(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Progress bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -503,7 +1029,6 @@ fun TopSellerRow(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Revenue
             Text(
                 text = "K ${formatAmount(revenue)}",
                 style = MaterialTheme.typography.titleMedium,
@@ -517,16 +1042,16 @@ fun TopSellerRow(
 @Composable
 private fun RankBadge(rank: Int) {
     val backgroundColor = when (rank) {
-        1 -> Color(0xFFFEF3C7) // Amber 100
-        2 -> Color(0xFFE5E7EB) // Gray 200
-        3 -> Color(0xFFFFEDD5) // Orange 100
+        1 -> Color(0xFFFEF3C7)
+        2 -> Color(0xFFE5E7EB)
+        3 -> Color(0xFFFFEDD5)
         else -> SlateSurfaceVariant
     }
 
     val textColor = when (rank) {
-        1 -> Color(0xFFD97706) // Amber 600
-        2 -> Color(0xFF6B7280) // Gray 500
-        3 -> Color(0xFFEA580C) // Orange 600
+        1 -> Color(0xFFD97706)
+        2 -> Color(0xFF6B7280)
+        3 -> Color(0xFFEA580C)
         else -> SlateTextSecondary
     }
 
@@ -603,9 +1128,7 @@ fun ModernCategoryRow(
 // ============================================
 
 @Composable
-fun AnalyticsEmptyState(
-    modifier: Modifier = Modifier
-) {
+fun AnalyticsEmptyState(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -689,12 +1212,14 @@ fun ModernInsightCard(
         InsightType.INFO -> InfoBg
         InsightType.WARNING -> WarningBg
         InsightType.SUCCESS -> SuccessBg
+        InsightType.AI -> EmeraldAccent.copy(alpha = 0.08f)
     }
 
     val iconColor = when (type) {
         InsightType.INFO -> InfoBlue
         InsightType.WARNING -> WarningYellow
         InsightType.SUCCESS -> SuccessGreen
+        InsightType.AI -> EmeraldAccent
     }
 
     Card(
@@ -751,6 +1276,53 @@ fun ModernInsightCard(
 }
 
 // ============================================
+// Chart Legend Item
+// ============================================
+
+@Composable
+fun ChartLegendItem(
+    color: Color,
+    label: String,
+    isDashed: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        if (isDashed) {
+            Canvas(
+                modifier = Modifier
+                    .width(16.dp)
+                    .height(2.dp)
+            ) {
+                drawLine(
+                    color = color,
+                    start = Offset(0f, size.height / 2),
+                    end = Offset(size.width, size.height / 2),
+                    strokeWidth = 2.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 2f))
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(color)
+            )
+        }
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = SlateTextSecondary
+        )
+    }
+}
+
+// ============================================
 // Helper Functions
 // ============================================
 
@@ -762,11 +1334,20 @@ private fun formatAmount(amount: Double): String {
     }
 }
 
+private fun formatChartValue(value: Float): String {
+    return if (value >= 1000) {
+        String.format("%.1fK", value / 1000)
+    } else {
+        String.format("%.0f", value)
+    }
+}
+
 fun getPreviousPeriodLabel(period: TimePeriod): String {
     return when (period) {
         TimePeriod.TODAY -> "yesterday"
         TimePeriod.THIS_WEEK -> "last week"
         TimePeriod.THIS_MONTH -> "last month"
+        TimePeriod.CUSTOM -> "previous period"
     }
 }
 
@@ -788,10 +1369,7 @@ fun PeriodSelectorChips(
 }
 
 @Composable
-fun SimpleSalesBarChart(
-    period: TimePeriod,
-    modifier: Modifier = Modifier
-) {
+fun SimpleSalesBarChart(period: TimePeriod, modifier: Modifier = Modifier) {
     val dataPoints = when (period) {
         TimePeriod.TODAY -> listOf(
             ChartDataPoint("8AM", 120f),
@@ -810,7 +1388,7 @@ fun SimpleSalesBarChart(
             ChartDataPoint("Sat", 700f),
             ChartDataPoint("Sun", 400f)
         )
-        TimePeriod.THIS_MONTH -> listOf(
+        TimePeriod.THIS_MONTH, TimePeriod.CUSTOM -> listOf(
             ChartDataPoint("W1", 2800f),
             ChartDataPoint("W2", 3200f),
             ChartDataPoint("W3", 2900f),
@@ -818,10 +1396,7 @@ fun SimpleSalesBarChart(
         )
     }
 
-    SimpleLineChart(
-        dataPoints = dataPoints,
-        modifier = modifier
-    )
+    SimpleLineChart(dataPoints = dataPoints, modifier = modifier)
 }
 
 @Composable
@@ -845,36 +1420,7 @@ fun StatCard(
 }
 
 @Composable
-fun ChartLegendItem(
-    color: Color,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(10.dp)
-                .clip(CircleShape)
-                .background(color)
-        )
-
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = SlateTextSecondary
-        )
-    }
-}
-
-@Composable
-fun TopSellerCard(
-    seller: TopSellerItem,
-    modifier: Modifier = Modifier
-) {
+fun TopSellerCard(seller: TopSellerItem, modifier: Modifier = Modifier) {
     TopSellerRow(
         rank = seller.rank,
         productName = seller.name,
@@ -886,10 +1432,7 @@ fun TopSellerCard(
 }
 
 @Composable
-fun CategoryBreakdownRow(
-    category: CategoryItem,
-    modifier: Modifier = Modifier
-) {
+fun CategoryBreakdownRow(category: CategoryItem, modifier: Modifier = Modifier) {
     ModernCategoryRow(
         categoryName = category.name,
         revenue = category.revenue,
@@ -899,10 +1442,7 @@ fun CategoryBreakdownRow(
 }
 
 @Composable
-fun ProfitMarginRow(
-    item: ProfitMarginItem,
-    modifier: Modifier = Modifier
-) {
+fun ProfitMarginRow(item: ProfitMarginItem, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -935,10 +1475,7 @@ fun ProfitMarginRow(
 }
 
 @Composable
-fun InsightCard(
-    insight: InsightItem,
-    modifier: Modifier = Modifier
-) {
+fun InsightCard(insight: InsightItem, modifier: Modifier = Modifier) {
     ModernInsightCard(
         icon = insight.icon,
         title = insight.title,
@@ -949,9 +1486,6 @@ fun InsightCard(
 }
 
 @Composable
-fun AnalyticsSectionHeader(
-    title: String,
-    modifier: Modifier = Modifier
-) {
+fun AnalyticsSectionHeader(title: String, modifier: Modifier = Modifier) {
     AnalyticsSectionTitle(title = title, modifier = modifier)
 }
