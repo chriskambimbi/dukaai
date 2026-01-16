@@ -2,20 +2,20 @@
 
 ## Overview
 
-This dataset contains **2000 training examples** for fine-tuning Google's FunctionGemma model on DukaAI voice command operations. The dataset is designed specifically for Zambian retail shop management scenarios.
+This dataset contains **2500 training examples** for fine-tuning Google's FunctionGemma model on DukaAI voice command operations. The dataset is designed specifically for Zambian retail shop management scenarios.
 
 ## Files
 
-- `dukaai_functiongemma_training_data.jsonl` (22MB) - Training dataset in JSONL format
+- `dukaai_functiongemma_training_data.jsonl` (27MB) - Training dataset in JSONL format
 - `generate_training_data.py` (52KB) - Python script to regenerate or customize the dataset
 
 ## Dataset Statistics
 
 | Metric | Count |
 |--------|-------|
-| **Total Examples** | 2000 |
-| **Training Examples** | 1045 (52.25%) |
-| **Evaluation Examples** | 955 (47.75%) |
+| **Total Examples** | 2500 |
+| **Training Examples** | 1205 (48.2%) |
+| **Evaluation Examples** | 1295 (51.8%) |
 | **Unique Tools** | 30 |
 | **Operation Categories** | 21 |
 
@@ -23,20 +23,20 @@ This dataset contains **2000 training examples** for fine-tuning Google's Functi
 
 | Category | Count | Example Operations |
 |----------|-------|-------------------|
-| Sales | 200 | "Sell 3 Coca-Cola", "Sold 5 bread" |
-| Credit Sales | 150 | "John bought 2 sugar pa ng'ong'ole" |
-| Stock Checks | 130 | "How many Mealie Meal in stock?" |
-| Customer Balance | 130 | "How much does Mary owe?" |
-| Payments | 150 | "John paid 500", "Received 200 from Sarah" |
-| Add Products | 80 | "Add Kapenta at K50" |
-| Stock Updates | 80 | "Add 100 Mealie Meal to stock" |
-| Analytics | 150 | "Sales today", "Revenue this week" |
-| Customer Management | 90 | "Add customer Moses 0977123456" |
-| Low Stock Alerts | 90 | "Show me low stock items" |
-| Navigation | 100 | "Go home", "Open inventory" |
-| Batch Sales | 80 | "Sell Coca-Cola:2,Bread:1" |
-| Product Search | 70 | "Search for Coc", "Show me beverages" |
-| Top Sellers | 70 | "Top selling products today" |
+| Sales | 250 | "Sell 3 Coca-Cola", "Sold 5 bread" |
+| Credit Sales | 200 | "John bought 2 sugar pa ng'ong'ole" |
+| Stock Checks | 160 | "How many Mealie Meal in stock?" |
+| Customer Balance | 160 | "How much does Mary owe?" |
+| Payments | 200 | "John paid 500", "Received 200 from Sarah" |
+| Add Products | 120 | "Add Kapenta at K50" |
+| Stock Updates | 120 | "Add 100 Mealie Meal to stock" |
+| Analytics | 180 | "Sales today", "Revenue this week" |
+| Customer Management | 120 | "Add customer Moses 0977123456" |
+| Low Stock Alerts | 120 | "Show me low stock items" |
+| Navigation | 130 | "Go home", "Open inventory" |
+| Batch Sales | 110 | "Sell Coca-Cola:2,Bread:1" |
+| Product Search | 100 | "Search for Coc", "Show me beverages" |
+| Top Sellers | 100 | "Top selling products today" |
 | Overdue Credits | 60 | "Show me overdue credits" |
 | Today's Sales | 60 | "Today's sales summary" |
 | All Balances | 60 | "Who owes me money?" |
@@ -243,7 +243,7 @@ After fine-tuning, integrate the model into DukaAI:
 
 ## Validation
 
-The evaluation examples (955) can be used to validate model performance:
+The evaluation examples (1295) can be used to validate model performance:
 
 ```bash
 # Filter evaluation examples
@@ -276,6 +276,11 @@ To improve the dataset:
 5. Add voice-specific patterns (stutters, corrections)
 
 ## Changelog
+
+### Version 1.1 (2026-01-16)
+- Expanded dataset to 2500 examples (+500)
+- Increased coverage across all major categories
+- Better train/eval balance (48%/52%)
 
 ### Version 1.0 (2026-01-16)
 - Initial release with 2000 examples
