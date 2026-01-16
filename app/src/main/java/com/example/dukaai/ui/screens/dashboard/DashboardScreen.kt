@@ -1,6 +1,7 @@
 package com.example.dukaai.ui.screens.dashboard
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -424,9 +425,10 @@ private fun SuggestedProductCard(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = SlateSurface // Explicit white background
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, SlateBorder), // Subtle border for definition
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp) // Subtle shadow
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -497,9 +499,10 @@ private fun SalesSummaryCard(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = SlateSurface // Explicit white background
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, SlateBorder), // Subtle border for definition
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp) // Subtle shadow
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -842,9 +845,10 @@ private fun TopSellerCard(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = SlateSurface // Explicit white background
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, SlateBorder), // Subtle border for definition
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp) // Subtle shadow
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
