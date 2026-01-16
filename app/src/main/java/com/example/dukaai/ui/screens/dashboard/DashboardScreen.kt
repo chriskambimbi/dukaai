@@ -240,10 +240,10 @@ private fun PrimaryActionButton(
             .height(80.dp)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(12.dp),
                 spotColor = containerColor.copy(alpha = 0.3f)
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(
@@ -495,7 +495,7 @@ private fun SuggestedProductCard(
 private fun SalesSummaryCard(modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),

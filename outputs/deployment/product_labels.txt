@@ -1,0 +1,9 @@
+chibuku
+coca_cola
+fanta
+mealie_meal
+monster_energy
+mosi_lager
+pepsi
+sprite
+white_sugar

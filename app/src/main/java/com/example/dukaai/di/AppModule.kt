@@ -49,15 +49,7 @@ object AppModule {
     fun provideProductClassifier(
         @ApplicationContext context: Context
     ): ProductClassifier {
-        val classifier = TFLiteProductClassifier(context)
-        // Initialize the classifier
-        try {
-            classifier.initialize()
-        } catch (e: Exception) {
-            // Log error but continue - app can work without ML
-            android.util.Log.e("AppModule", "Failed to initialize ML classifier", e)
-        }
-        return classifier
+        return TFLiteProductClassifier(context)
     }
 
     /**

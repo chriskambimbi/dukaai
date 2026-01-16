@@ -12,11 +12,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 /**
  * Bottom navigation bar for Duka.AI
- * Shows main app sections: Dashboard, Products, Sell, Credit, Analytics
+ * Shows main app sections: Dashboard, Products, Sell (modal), Credit, Analytics
  */
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
+    onSellClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavigationBar(
@@ -27,6 +28,10 @@ fun BottomNavigationBar(
         val currentDestination = navBackStackEntry?.destination
 
         Screen.bottomNavItems.forEach { screen ->
+            val isSelected = currentDestination?.hierarchy?.any {
+                it.route == screen.route
+            } == true
+
             NavigationBarItem(
                 icon = {
                     screen.icon?.let {
@@ -39,22 +44,25 @@ fun BottomNavigationBar(
                 label = {
                     Text(text = screen.title)
                 },
-                selected = currentDestination?.hierarchy?.any {
-                    it.route == screen.route
-                } == true,
+                selected = isSelected,
                 onClick = {
-                    navController.navigate(screen.route) {
-                        // Pop up to the start destination of the graph to
-                        // avoid building up a large stack of destinations
-                        // on the back stack as users select items
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    // Special handling for Sell - show modal instead of navigating
+                    if (screen == Screen.QuickSale) {
+                        onSellClick()
+                    } else {
+                        navController.navigate(screen.route) {
+                            // Pop up to the start destination of the graph to
+                            // avoid building up a large stack of destinations
+                            // on the back stack as users select items
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            // Avoid multiple copies of the same destination when
+                            // reselecting the same item
+                            launchSingleTop = true
+                            // Restore state when reselecting a previously selected item
+                            restoreState = true
                         }
-                        // Avoid multiple copies of the same destination when
-                        // reselecting the same item
-                        launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
-                        restoreState = true
                     }
                 }
             )

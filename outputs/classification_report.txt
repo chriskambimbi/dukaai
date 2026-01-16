@@ -1,0 +1,18 @@
+AI KANTEMBA MANAGER - CLASSIFICATION REPORT
+======================================================================
+
+                precision    recall  f1-score   support
+
+       chibuku     0.0000    0.0000    0.0000         5
+     coca_cola     0.0000    0.0000    0.0000         5
+         fanta     0.2093    1.0000    0.3462         9
+   mealie_meal     0.0000    0.0000    0.0000         2
+monster_energy     0.0000    0.0000    0.0000         6
+    mosi_lager     0.0000    0.0000    0.0000         4
+         pepsi     0.0000    0.0000    0.0000         2
+        sprite     0.0000    0.0000    0.0000         9
+   white_sugar     0.0000    0.0000    0.0000         1
+
+      accuracy                         0.2093        43
+     macro avg     0.0233    0.1111    0.0385        43
+  weighted avg     0.0438    0.2093    0.0725        43

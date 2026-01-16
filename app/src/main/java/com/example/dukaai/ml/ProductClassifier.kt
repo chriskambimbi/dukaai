@@ -13,13 +13,13 @@ interface ProductClassifier {
      * @param maxResults Maximum number of results to return
      * @return Classification results with predictions
      */
-    fun classifyProduct(bitmap: Bitmap, maxResults: Int = 5): ClassificationResults
+    suspend fun classifyProduct(bitmap: Bitmap, maxResults: Int = 5): ClassificationResults
 
     /**
      * Initialize the classifier and load the ML model
      * Should be called before first use
      */
-    fun initialize()
+    suspend fun initialize()
 
     /**
      * Clean up resources used by the classifier

@@ -1,0 +1,10 @@
+Product,Precision,Recall,F1-Score,Support
+chibuku,0.0,0.0,0.0,5
+coca_cola,0.0,0.0,0.0,5
+mealie_meal,0.0,0.0,0.0,2
+monster_energy,0.0,0.0,0.0,6
+pepsi,0.0,0.0,0.0,2
+mosi_lager,0.0,0.0,0.0,4
+sprite,0.0,0.0,0.0,9
+white_sugar,0.0,0.0,0.0,1
+fanta,0.20930232558139536,1.0,0.34615384615384615,9
