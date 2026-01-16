@@ -1,11 +1,14 @@
 package com.example.dukaai.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.outlined.Payment
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -22,14 +24,20 @@ import androidx.compose.ui.unit.sp
 import com.example.dukaai.ui.theme.*
 import kotlin.math.abs
 
+// WhatsApp brand green
+private val WhatsAppGreen = Color(0xFF25D366)
+
 /**
  * Modern Customer Card for Credit Ledger
  *
+ * Two-row layout:
+ * - Top row: Avatar + Name + Amount
+ * - Bottom row: Status + Actions (Send Reminder, Pay, History)
+ *
  * Features:
- * - Initials avatar with pastel background
- * - Clean layout with subtle border
- * - WhatsApp and Pay quick action buttons
- * - Bold right-aligned debt amount
+ * - Red border for overdue customers
+ * - Prominent "Send Reminder" button for WhatsApp
+ * - View History option
  */
 @Composable
 fun CustomerCard(
@@ -42,94 +50,164 @@ fun CustomerCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onWhatsAppClick: (() -> Unit)? = null,
-    onPayClick: (() -> Unit)? = null
+    onPayClick: (() -> Unit)? = null,
+    onViewHistoryClick: (() -> Unit)? = null
 ) {
+    val isOverdue = paymentStatus == PaymentStatus.OVERDUE
+    val cardBorder = if (isOverdue) {
+        BorderStroke(2.dp, ErrorRed)
+    } else {
+        BorderStroke(1.dp, SlateBorder)
+    }
+
     Card(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = SlateBorder,
-                shape = RoundedCornerShape(12.dp)
-            ),
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = SlateSurface
         ),
+        border = cardBorder,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            // Customer initials avatar
-            CustomerInitialsAvatar(name = customerName)
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Customer info
-            Column(
-                modifier = Modifier.weight(1f)
+            // Top Row: Avatar + Name + Amount
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Name
-                Text(
-                    text = customerName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = SlateTextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                // Customer initials avatar
+                CustomerInitialsAvatar(
+                    name = customerName,
+                    isOverdue = isOverdue
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-                // Payment status and unpaid count
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Name and last purchase
+                Column(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    PaymentStatusChip(status = paymentStatus)
+                    Text(
+                        text = customerName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = SlateTextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = "Last purchase: $lastPurchaseDate",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SlateTextTertiary
+                    )
+                }
+
+                // Amount - right aligned
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "K ${formatDebt(totalDebt)}",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        ),
+                        color = if (isOverdue) ErrorRed else if (totalDebt > 0) SlateTextPrimary else EmeraldAccent
+                    )
+
                     Text(
                         text = "$unpaidTransactions unpaid",
                         style = MaterialTheme.typography.bodySmall,
                         color = SlateTextTertiary
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                // Quick action buttons
+            // Divider
+            HorizontalDivider(color = SlateBorder.copy(alpha = 0.5f))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Bottom Row: Status + Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Payment status chip
+                PaymentStatusChip(status = paymentStatus)
+
+                // Action buttons
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // WhatsApp button (only if phone number exists)
-                    if (phoneNumber != null && onWhatsAppClick != null) {
+                    // View History button
+                    if (onViewHistoryClick != null) {
                         TextButton(
-                            onClick = onWhatsAppClick,
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = Color(0xFF25D366) // WhatsApp green
-                            )
+                            onClick = onViewHistoryClick,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
+                            Icon(
+                                imageVector = Icons.Default.History,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = SlateTextSecondary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "WhatsApp",
+                                text = "History",
                                 style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Medium
+                                color = SlateTextSecondary
+                            )
+                        }
+                    }
+
+                    // Send Reminder button (WhatsApp)
+                    if (phoneNumber != null && onWhatsAppClick != null) {
+                        FilledTonalButton(
+                            onClick = onWhatsAppClick,
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = WhatsAppGreen.copy(alpha = 0.15f),
+                                contentColor = WhatsAppGreen
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.NotificationsActive,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Send Reminder",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
 
                     // Pay button
                     if (onPayClick != null) {
-                        TextButton(
+                        Button(
                             onClick = onPayClick,
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = EmeraldAccent
-                            )
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = EmeraldAccent,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Payment,
@@ -140,33 +218,11 @@ fun CustomerCard(
                             Text(
                                 text = "Pay",
                                 style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Debt amount - right aligned, bold
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = "K ${formatDebt(totalDebt)}",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    ),
-                    color = if (totalDebt > 0) ErrorRed else EmeraldAccent
-                )
-
-                Text(
-                    text = if (totalDebt > 0) "Owed" else "Paid",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = SlateTextTertiary
-                )
             }
         }
     }
@@ -174,12 +230,14 @@ fun CustomerCard(
 
 /**
  * Customer initials avatar with pastel background
+ * Shows red ring for overdue customers
  */
 @Composable
 fun CustomerInitialsAvatar(
     name: String,
     modifier: Modifier = Modifier,
-    size: Int = 48
+    size: Int = 48,
+    isOverdue: Boolean = false
 ) {
     // Get initials (first letter of first and last name)
     val initials = name
@@ -198,6 +256,13 @@ fun CustomerInitialsAvatar(
     Box(
         modifier = modifier
             .size(size.dp)
+            .then(
+                if (isOverdue) {
+                    Modifier.border(2.dp, ErrorRed, CircleShape)
+                } else {
+                    Modifier
+                }
+            )
             .clip(CircleShape)
             .background(backgroundColor),
         contentAlignment = Alignment.Center
@@ -232,10 +297,10 @@ fun PaymentStatusChip(
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
@@ -294,25 +359,23 @@ fun CompactCustomerCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isOverdue = paymentStatus == PaymentStatus.OVERDUE
+
     Card(
         onClick = onClick,
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = SlateBorder,
-                shape = RoundedCornerShape(12.dp)
-            ),
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SlateSurface
         ),
+        border = if (isOverdue) BorderStroke(2.dp, ErrorRed) else BorderStroke(1.dp, SlateBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CustomerInitialsAvatar(name = customerName, size = 40)
+            CustomerInitialsAvatar(name = customerName, size = 40, isOverdue = isOverdue)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -331,7 +394,7 @@ fun CompactCustomerCard(
                 text = "K ${formatDebt(totalDebt)}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (totalDebt > 0) ErrorRed else EmeraldAccent
+                color = if (isOverdue) ErrorRed else if (totalDebt > 0) SlateTextPrimary else EmeraldAccent
             )
         }
     }
