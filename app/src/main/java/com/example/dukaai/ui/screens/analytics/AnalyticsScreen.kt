@@ -46,13 +46,35 @@ fun AnalyticsScreen(
     var selectedPeriod by remember { mutableStateOf(TimePeriod.TODAY) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
+    var showVoiceInput by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // Check if there's data (for empty state demo, we'll always have data)
     val hasData = true
 
+    // Voice command examples for analytics
+    val voiceCommandExamples = listOf(
+        "Show me yesterday's sales",
+        "What's my profit this week?",
+        "Show top products",
+        "Export report"
+    )
+
     Scaffold(
-        containerColor = SlateBackground
+        containerColor = SlateBackground,
+        floatingActionButton = {
+            // Voice command FAB
+            FloatingActionButton(
+                onClick = { showVoiceInput = true },
+                containerColor = EmeraldAccent,
+                contentColor = Color.White
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Mic,
+                    contentDescription = "Voice command"
+                )
+            }
+        }
     ) { paddingValues ->
         LazyColumn(
             modifier = modifier
@@ -215,6 +237,31 @@ fun AnalyticsScreen(
             containerColor = SlateSurface
         )
     }
+
+    // Voice Input Dialog
+    VoiceInputDialog(
+        isVisible = showVoiceInput,
+        onDismiss = { showVoiceInput = false },
+        onResult = { spokenText ->
+            // Parse voice command and take action
+            val command = parseAnalyticsVoiceCommand(spokenText)
+            when (command?.first) {
+                "show_period" -> {
+                    when (command.second["period"]) {
+                        "yesterday" -> selectedPeriod = TimePeriod.THIS_WEEK // closest match
+                        "today" -> selectedPeriod = TimePeriod.TODAY
+                        "last_week", "this_week" -> selectedPeriod = TimePeriod.THIS_WEEK
+                        "last_month", "this_month" -> selectedPeriod = TimePeriod.THIS_MONTH
+                    }
+                }
+                "export" -> showExportDialog = true
+                // Other commands can be handled here
+            }
+        },
+        title = "Ask about your sales",
+        hint = "Try: 'Show yesterday's sales'",
+        exampleCommands = voiceCommandExamples
+    )
 }
 
 @Composable

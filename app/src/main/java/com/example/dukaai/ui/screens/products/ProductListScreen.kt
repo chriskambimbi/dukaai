@@ -136,12 +136,16 @@ fun ProductListScreen(
                 )
             }
 
-            // Search bar
+            // Search bar with voice support
             item {
                 ModernSearchBar(
                     query = searchQuery,
                     onQueryChange = { searchQuery = it },
                     onSearch = { focusManager.clearFocus() },
+                    onVoiceSearch = { spokenText ->
+                        searchQuery = spokenText
+                        focusManager.clearFocus()
+                    },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -338,6 +342,7 @@ private fun ModernSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    onVoiceSearch: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -351,7 +356,7 @@ private fun ModernSearchBar(
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = "Search products...",
+                    text = "Search products or say it...",
                     color = SlateTextTertiary
                 )
             },
@@ -363,17 +368,31 @@ private fun ModernSearchBar(
                 )
             },
             trailingIcon = {
-                AnimatedVisibility(
-                    visible = query.isNotEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { onQueryChange("") }) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Clear",
-                            tint = SlateTextTertiary
-                        )
+                    // Voice search button
+                    com.example.dukaai.ui.components.VoiceSearchButton(
+                        onVoiceResult = { spokenText ->
+                            val searchTerm = com.example.dukaai.ui.components.parseProductVoiceCommand(spokenText)
+                            onVoiceSearch(searchTerm)
+                        },
+                        tint = EmeraldAccent
+                    )
+
+                    // Clear button
+                    AnimatedVisibility(
+                        visible = query.isNotEmpty(),
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear",
+                                tint = SlateTextTertiary
+                            )
+                        }
                     }
                 }
             },

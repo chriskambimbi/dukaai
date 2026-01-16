@@ -57,7 +57,11 @@ fun DukaAIApp() {
     val networkStatus by rememberNetworkStatus()
     val isOffline = networkStatus is NetworkStatus.Unavailable
 
-    Scaffold(
+    // Onboarding state for first-time users
+    val onboardingState = com.example.dukaai.ui.components.rememberOnboardingState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             BottomNavigationBar(
@@ -112,6 +116,27 @@ fun DukaAIApp() {
                 }
             )
         }
+    }
+
+        // Onboarding overlay for first-time users
+        com.example.dukaai.ui.components.OnboardingOverlay(
+            state = onboardingState,
+            onActionClick = { stepId ->
+                when (stepId) {
+                    "quick_sale" -> {
+                        onboardingState.complete()
+                        showSellSheet = true
+                    }
+                    "voice" -> {
+                        onboardingState.nextStep()
+                    }
+                    "analytics" -> {
+                        onboardingState.complete()
+                        navController.navigate(Screen.Analytics.route)
+                    }
+                }
+            }
+        )
     }
 }
 
