@@ -258,3 +258,47 @@ fun ParsedFunctionCall.getBooleanArg(name: String, default: Boolean = false): Bo
 fun ParsedFunctionCall.hasArg(name: String): Boolean {
     return arguments.containsKey(name) && arguments[name] != null
 }
+
+/**
+ * Extension function to get string argument or null
+ */
+fun ParsedFunctionCall.getStringArgOrNull(name: String): String? {
+    return arguments[name]?.toString()
+}
+
+/**
+ * Extension function to get int argument or null
+ */
+fun ParsedFunctionCall.getIntArgOrNull(name: String): Int? {
+    val value = arguments[name] ?: return null
+    return when (value) {
+        is Number -> value.toInt()
+        is String -> value.toIntOrNull()
+        else -> null
+    }
+}
+
+/**
+ * Extension function to get double argument or null
+ */
+fun ParsedFunctionCall.getDoubleArgOrNull(name: String): Double? {
+    val value = arguments[name] ?: return null
+    return when (value) {
+        is Number -> value.toDouble()
+        is String -> value.toDoubleOrNull()
+        else -> null
+    }
+}
+
+/**
+ * Extension function to get boolean argument or null
+ */
+fun ParsedFunctionCall.getBooleanArgOrNull(name: String): Boolean? {
+    val value = arguments[name] ?: return null
+    return when (value) {
+        is Boolean -> value
+        is String -> value.equals("true", ignoreCase = true) || value == "1"
+        is Number -> value.toInt() != 0
+        else -> null
+    }
+}

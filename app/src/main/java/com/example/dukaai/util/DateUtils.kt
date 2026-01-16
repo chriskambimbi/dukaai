@@ -149,4 +149,47 @@ object DateUtils {
             set(Calendar.MILLISECOND, 999)
         }.timeInMillis
     }
+
+    /**
+     * Format timestamp to date string (YYYY-MM-DD)
+     * @param timestamp Timestamp in milliseconds
+     * @return Formatted date string
+     */
+    fun formatDate(timestamp: Long): String {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+        }
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        return String.format("%04d-%02d-%02d", year, month, day)
+    }
+
+    /**
+     * Get hour of day from timestamp (0-23)
+     * @param timestamp Timestamp in milliseconds
+     * @return Hour of day (0-23)
+     */
+    fun getHourOfDay(timestamp: Long): Int {
+        return Calendar.getInstance().apply {
+            timeInMillis = timestamp
+        }.get(Calendar.HOUR_OF_DAY)
+    }
+
+    /**
+     * Format timestamp to full datetime string
+     * @param timestamp Timestamp in milliseconds
+     * @return Formatted datetime string
+     */
+    fun formatDateTime(timestamp: Long): String {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+        }
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        return String.format("%04d-%02d-%02d %02d:%02d", year, month, day, hour, minute)
+    }
 }

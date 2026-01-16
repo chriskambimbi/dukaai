@@ -18,6 +18,7 @@ data class ProductEntity(
     val minStockThreshold: Int = 10,
     val buyingPrice: Double,
     val sellingPrice: Double,
+    val unit: String = "pieces",
     val imageUrl: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

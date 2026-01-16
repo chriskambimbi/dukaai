@@ -1,6 +1,7 @@
 package com.example.dukaai.di
 
 import android.content.Context
+import com.example.dukaai.data.local.dao.InventoryLogDao
 import com.example.dukaai.data.repository.CreditRepository
 import com.example.dukaai.data.repository.CustomerRepository
 import com.example.dukaai.data.repository.PaymentRepository
@@ -57,14 +58,16 @@ object FunctionGemmaModule {
         saleRepository: SaleRepository,
         customerRepository: CustomerRepository,
         creditRepository: CreditRepository,
-        paymentRepository: PaymentRepository
+        paymentRepository: PaymentRepository,
+        inventoryLogDao: InventoryLogDao
     ): DukaFunctionExecutor {
         return DukaFunctionExecutor(
             productRepository = productRepository,
             saleRepository = saleRepository,
             customerRepository = customerRepository,
             creditRepository = creditRepository,
-            paymentRepository = paymentRepository
+            paymentRepository = paymentRepository,
+            inventoryLogDao = inventoryLogDao
         )
     }
 

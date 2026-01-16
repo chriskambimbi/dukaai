@@ -15,6 +15,7 @@ data class CustomerEntity(
     val phoneNumber: String? = null,
     val address: String? = null,
     val notes: String? = null,
+    val creditLimit: Double? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
