@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,12 +33,12 @@ import com.example.dukaai.ui.theme.*
 /**
  * Dashboard Screen - Modern, minimalistic home screen of Duka.AI
  * Features:
- * - Elegant gradient header with greeting
- * - Prominent scan/voice action buttons
- * - Smart suggestions based on time
- * - Sales summary with visual indicators
+ * - Elegant gradient header with prominent CTA
+ * - Quick action buttons (Scan/Voice)
+ * - Smart suggestions with pagination dots
+ * - Sales summary with comparison context
  * - Low stock & credit alerts
- * - Top selling products with images
+ * - Top selling products with empty state handling
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,19 +174,21 @@ private fun DashboardHeader(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Greeting
+            // Greeting (smaller, secondary)
             Text(
                 text = greeting,
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White.copy(alpha = 0.85f)
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.7f)
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            // Primary CTA (prominent)
             Text(
                 text = "Ready to make a sale?",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.7f)
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
             )
         }
     }
@@ -203,21 +206,19 @@ private fun PrimaryActionsRow(
             .offset(y = (-24).dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Scan Button - Primary CTA
+        // Scan Button - Primary CTA (simplified label)
         PrimaryActionButton(
-            icon = Icons.Default.CameraAlt,
-            label = "Scan Product",
-            sublabel = "Camera",
+            icon = Icons.Default.QrCodeScanner,
+            label = "Scan Barcode",
             onClick = onScanClick,
             containerColor = ZambianGreen,
             modifier = Modifier.weight(1f)
         )
 
-        // Voice Button
+        // Voice Button (simplified label)
         PrimaryActionButton(
             icon = Icons.Default.Mic,
             label = "Voice Sale",
-            sublabel = "Speak",
             onClick = onVoiceClick,
             containerColor = AccentOrange,
             modifier = Modifier.weight(1f)
@@ -229,7 +230,6 @@ private fun PrimaryActionsRow(
 private fun PrimaryActionButton(
     icon: ImageVector,
     label: String,
-    sublabel: String,
     onClick: () -> Unit,
     containerColor: Color,
     modifier: Modifier = Modifier
@@ -237,7 +237,7 @@ private fun PrimaryActionButton(
     Card(
         onClick = onClick,
         modifier = modifier
-            .height(100.dp)
+            .height(80.dp)
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(16.dp),
@@ -251,11 +251,11 @@ private fun PrimaryActionButton(
                 .fillMaxSize()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.Center
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(Color.White.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
@@ -268,19 +268,14 @@ private fun PrimaryActionButton(
                 )
             }
 
-            Column {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-                Text(
-                    text = sublabel,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-            }
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
         }
     }
 }
@@ -292,23 +287,20 @@ private fun SmartSuggestionsSection(
 ) {
     val currentHour = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
 
-    // Time-based suggestions
+    // Time-based suggestions - exactly 2 items to show fully
     val suggestions = remember(currentHour) {
         when {
             currentHour < 10 -> listOf(
                 SuggestedProduct("Bread", "K 5", StockStatus.OK, 45),
-                SuggestedProduct("Milk 500ml", "K 12", StockStatus.LOW, 8),
-                SuggestedProduct("Eggs (6)", "K 25", StockStatus.OK, 24)
+                SuggestedProduct("Milk 500ml", "K 12", StockStatus.LOW, 8)
             )
             currentHour < 14 -> listOf(
                 SuggestedProduct("Coca-Cola", "K 12", StockStatus.OK, 36),
-                SuggestedProduct("Fanta Orange", "K 12", StockStatus.OK, 28),
-                SuggestedProduct("Chips (small)", "K 5", StockStatus.LOW, 12)
+                SuggestedProduct("Fanta Orange", "K 12", StockStatus.OK, 28)
             )
             else -> listOf(
                 SuggestedProduct("Mosi Lager", "K 15", StockStatus.OK, 48),
-                SuggestedProduct("Castle Lite", "K 18", StockStatus.LOW, 6),
-                SuggestedProduct("Cooking Oil 1L", "K 45", StockStatus.OK, 20)
+                SuggestedProduct("Castle Lite", "K 18", StockStatus.LOW, 6)
             )
         }
     }
@@ -357,16 +349,66 @@ private fun SmartSuggestionsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(suggestions) { product ->
-                SuggestedProductCard(
-                    product = product,
-                    onClick = onProductClick
-                )
+        if (suggestions.isEmpty()) {
+            // Empty state
+            EmptySuggestionsState(
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        } else {
+            // Show exactly 2 full cards
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                suggestions.take(2).forEach { product ->
+                    SuggestedProductCard(
+                        product = product,
+                        onClick = onProductClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun EmptySuggestionsState(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Lightbulb,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = SlateTextTertiary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "No suggestions yet",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SlateTextSecondary
+            )
+            Text(
+                text = "Start selling to get smart recommendations",
+                style = MaterialTheme.typography.bodySmall,
+                color = SlateTextTertiary,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -379,7 +421,7 @@ private fun SuggestedProductCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.width(140.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -443,7 +485,7 @@ private fun SuggestedProductCard(
                 text = product.price,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = CopperPrimary
+                color = EmeraldAccent
             )
         }
     }
@@ -497,15 +539,26 @@ private fun SalesSummaryCard(modifier: Modifier = Modifier) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Main amount
-            Text(
-                text = "K 456.00",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            // Main amount with comparison
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "K 456.00",
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "vs K 387 yesterday",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SlateTextTertiary,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -662,6 +715,12 @@ private fun TopSellersSection(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    // Top sellers data - could be empty
+    val topSellers = listOf(
+        TopSeller("Coca-Cola 500ml", 24, "K 288", StockStatus.OK, 36),
+        TopSeller("Bread (loaf)", 18, "K 90", StockStatus.OK, 22)
+    )
+
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
@@ -678,26 +737,97 @@ private fun TopSellersSection(
             TextButton(onClick = { navController.navigate(Screen.Analytics.route) }) {
                 Text(
                     text = "View All",
-                    color = CopperPrimary
+                    color = EmeraldAccent
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Top sellers data
-        val topSellers = listOf(
-            TopSeller("Coca-Cola 500ml", 24, "K 288", StockStatus.OK, 36),
-            TopSeller("Bread (loaf)", 18, "K 90", StockStatus.OK, 22),
-            TopSeller("Mosi Lager", 12, "K 144", StockStatus.LOW, 8)
-        )
+        if (topSellers.isEmpty()) {
+            // Empty state for no top sellers
+            EmptyTopSellersState(
+                onStartSelling = { navController.navigate(Screen.QuickSale.route) },
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        } else {
+            // Show exactly 2 full cards side by side
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                topSellers.take(2).forEach { seller ->
+                    TopSellerCard(
+                        topSeller = seller,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
 
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+@Composable
+private fun EmptyTopSellersState(
+    onStartSelling: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(topSellers) { seller ->
-                TopSellerCard(seller)
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(SlateSurfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.TrendingUp,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp),
+                    tint = SlateTextTertiary
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "No sales today yet",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = SlateTextPrimary
+            )
+            Text(
+                text = "Your top sellers will appear here",
+                style = MaterialTheme.typography.bodySmall,
+                color = SlateTextTertiary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onStartSelling,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = EmeraldAccent
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Make a Sale")
             }
         }
     }
@@ -709,7 +839,7 @@ private fun TopSellerCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.width(160.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -719,7 +849,7 @@ private fun TopSellerCard(
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            // Product image with stock badge
+            // Product image with badges
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -776,7 +906,7 @@ private fun TopSellerCard(
                         tint = Color.White
                     )
                     Text(
-                        text = "${topSeller.quantity}",
+                        text = "${topSeller.quantity} sold",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -796,23 +926,12 @@ private fun TopSellerCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = topSeller.revenue,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = CopperPrimary
-                )
-                Text(
-                    text = "revenue",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            }
+            Text(
+                text = topSeller.revenue,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = EmeraldAccent
+            )
         }
     }
 }
