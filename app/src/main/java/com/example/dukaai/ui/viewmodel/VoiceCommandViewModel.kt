@@ -10,6 +10,9 @@ import com.example.dukaai.data.repository.CustomerRepository
 import com.example.dukaai.data.repository.PaymentRepository
 import com.example.dukaai.data.repository.ProductRepository
 import com.example.dukaai.data.repository.SaleRepository
+import com.example.dukaai.ml.functiongemma.FunctionExecutionResult
+import com.example.dukaai.ml.functiongemma.FunctionGemmaService
+import com.example.dukaai.ml.functiongemma.ProcessingResult
 import com.example.dukaai.voice.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -19,13 +22,17 @@ import javax.inject.Inject
 
 /**
  * ViewModel for voice command functionality
- * Coordinates voice recognition, intent parsing, command execution, and voice feedback
+ * Coordinates voice recognition, FunctionGemma processing, command execution, and voice feedback
+ *
+ * Uses FunctionGemma as the primary natural language processing engine with fallback
+ * to pattern-based parsing when the ML model is not available.
  */
 @HiltViewModel
 class VoiceCommandViewModel @Inject constructor(
     private val voiceCommandService: VoiceCommandService,
     private val voiceIntentParser: VoiceIntentParser,
     private val voiceFeedbackService: VoiceFeedbackService,
+    private val functionGemmaService: FunctionGemmaService,
     private val productRepository: ProductRepository,
     private val saleRepository: SaleRepository,
     private val customerRepository: CustomerRepository,
@@ -35,6 +42,14 @@ class VoiceCommandViewModel @Inject constructor(
     companion object {
         private const val TAG = "VoiceCommandViewModel"
     }
+
+    // Whether to use FunctionGemma for processing (default: true)
+    private val _useFunctionGemma = MutableStateFlow(true)
+    val useFunctionGemma: StateFlow<Boolean> = _useFunctionGemma.asStateFlow()
+
+    // FunctionGemma model ready state
+    private val _isFunctionGemmaReady = MutableStateFlow(false)
+    val isFunctionGemmaReady: StateFlow<Boolean> = _isFunctionGemmaReady.asStateFlow()
 
     // Current language
     private val _currentLanguage = MutableStateFlow(VoiceLanguage.ENGLISH)
@@ -70,6 +85,35 @@ class VoiceCommandViewModel @Inject constructor(
 
     init {
         initializeTts()
+        initializeFunctionGemma()
+    }
+
+    /**
+     * Initialize FunctionGemma model
+     */
+    private fun initializeFunctionGemma() {
+        viewModelScope.launch {
+            try {
+                val result = functionGemmaService.initializeModel()
+                _isFunctionGemmaReady.value = result.isSuccess
+                if (result.isSuccess) {
+                    Log.d(TAG, "FunctionGemma initialized successfully")
+                } else {
+                    Log.w(TAG, "FunctionGemma initialization failed, using fallback parser")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "FunctionGemma initialization error", e)
+                _isFunctionGemmaReady.value = false
+            }
+        }
+    }
+
+    /**
+     * Toggle FunctionGemma usage
+     */
+    fun setUseFunctionGemma(enabled: Boolean) {
+        _useFunctionGemma.value = enabled
+        Log.d(TAG, "FunctionGemma processing: ${if (enabled) "enabled" else "disabled"}")
     }
 
     /**
@@ -167,38 +211,184 @@ class VoiceCommandViewModel @Inject constructor(
 
     /**
      * Process voice input text
+     * Uses FunctionGemma for intelligent command processing when available,
+     * with fallback to pattern-based parsing.
      */
     private fun processVoiceInput(text: String, confidence: Float) {
         viewModelScope.launch {
             _isProcessing.value = true
 
             try {
-                // Parse voice input to command
-                val command = voiceIntentParser.parse(
-                    text = text,
-                    language = _currentLanguage.value,
-                    confidence = confidence
-                )
-
-                _parsedCommand.value = command
-                Log.d(TAG, "Parsed command: ${command.type}, params: ${command.parameters}")
-
-                // Speak confirmation
-                voiceFeedbackService.speakConfirmation(command)
-
-                // Execute command if confident
-                if (command.isConfident()) {
-                    executeCommand(command)
+                // Try FunctionGemma processing first if enabled
+                if (_useFunctionGemma.value) {
+                    processWithFunctionGemma(text)
                 } else {
-                    _executionResult.value = VoiceCommandResult.NeedsConfirmation(
-                        command = command,
-                        prompt = "Low confidence. Please confirm: ${command.originalText}"
-                    )
+                    processWithLegacyParser(text, confidence)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing voice input", e)
                 _error.value = e.message
                 voiceFeedbackService.speakError("Failed to process command")
+            } finally {
+                _isProcessing.value = false
+            }
+        }
+    }
+
+    /**
+     * Process voice input using FunctionGemma for intelligent NLU
+     */
+    private suspend fun processWithFunctionGemma(text: String) {
+        Log.d(TAG, "Processing with FunctionGemma: $text")
+
+        val result = functionGemmaService.processCommand(text)
+
+        when (result) {
+            is ProcessingResult.Success -> {
+                val message = result.getSummaryMessage()
+                Log.d(TAG, "FunctionGemma result: $message")
+
+                // Speak the result
+                voiceFeedbackService.speak(message)
+
+                // Update execution result for UI
+                _executionResult.value = if (result.allSuccessful()) {
+                    VoiceCommandResult.Success(
+                        message = message,
+                        data = result.results
+                    )
+                } else {
+                    // Check for specific error types
+                    val firstError = result.results.firstOrNull { it !is FunctionExecutionResult.Success }
+                    when (firstError) {
+                        is FunctionExecutionResult.ProductNotFound -> {
+                            VoiceCommandResult.Failure(
+                                error = "Product not found",
+                                reason = if (firstError.suggestions.isNotEmpty()) {
+                                    "Did you mean: ${firstError.suggestions.joinToString(", ")}?"
+                                } else {
+                                    "No product found matching: ${firstError.productName}"
+                                }
+                            )
+                        }
+                        is FunctionExecutionResult.CustomerNotFound -> {
+                            VoiceCommandResult.Failure(
+                                error = "Customer not found",
+                                reason = if (firstError.suggestions.isNotEmpty()) {
+                                    "Did you mean: ${firstError.suggestions.joinToString(", ")}?"
+                                } else {
+                                    "No customer found matching: ${firstError.customerName}"
+                                }
+                            )
+                        }
+                        is FunctionExecutionResult.InsufficientStock -> {
+                            VoiceCommandResult.Failure(
+                                error = "Insufficient stock",
+                                reason = "Only ${firstError.availableStock} ${firstError.productName} available"
+                            )
+                        }
+                        is FunctionExecutionResult.NeedsConfirmation -> {
+                            val dummyCommand = VoiceCommand(
+                                type = VoiceCommandType.UNKNOWN,
+                                originalText = text,
+                                language = _currentLanguage.value.code,
+                                confidence = 0.5f,
+                                parameters = firstError.details.mapValues { it.value ?: "" }
+                            )
+                            VoiceCommandResult.NeedsConfirmation(
+                                command = dummyCommand,
+                                prompt = firstError.message
+                            )
+                        }
+                        is FunctionExecutionResult.Error -> {
+                            VoiceCommandResult.Failure(
+                                error = "Execution failed",
+                                reason = firstError.errorMessage
+                            )
+                        }
+                        else -> {
+                            VoiceCommandResult.Success(message = message, data = result.results)
+                        }
+                    }
+                }
+            }
+
+            is ProcessingResult.NoFunctionDetected -> {
+                Log.d(TAG, "No function detected: ${result.message}")
+                voiceFeedbackService.speak(result.message)
+                _executionResult.value = VoiceCommandResult.Failure(
+                    error = "Command not understood",
+                    reason = result.message
+                )
+            }
+
+            is ProcessingResult.ValidationError -> {
+                val errorMsg = "Missing information: ${result.errors.joinToString(", ")}"
+                Log.d(TAG, "Validation error: $errorMsg")
+                voiceFeedbackService.speak(errorMsg)
+                _executionResult.value = VoiceCommandResult.Failure(
+                    error = "Incomplete command",
+                    reason = errorMsg
+                )
+            }
+
+            is ProcessingResult.Error -> {
+                Log.e(TAG, "FunctionGemma error: ${result.message}", result.exception)
+                voiceFeedbackService.speakError(result.message)
+                _executionResult.value = VoiceCommandResult.Failure(
+                    error = "Processing error",
+                    reason = result.message
+                )
+            }
+        }
+    }
+
+    /**
+     * Process voice input using legacy pattern-based parser
+     */
+    private suspend fun processWithLegacyParser(text: String, confidence: Float) {
+        Log.d(TAG, "Processing with legacy parser: $text")
+
+        // Parse voice input to command
+        val command = voiceIntentParser.parse(
+            text = text,
+            language = _currentLanguage.value,
+            confidence = confidence
+        )
+
+        _parsedCommand.value = command
+        Log.d(TAG, "Parsed command: ${command.type}, params: ${command.parameters}")
+
+        // Speak confirmation
+        voiceFeedbackService.speakConfirmation(command)
+
+        // Execute command if confident
+        if (command.isConfident()) {
+            executeCommand(command)
+        } else {
+            _executionResult.value = VoiceCommandResult.NeedsConfirmation(
+                command = command,
+                prompt = "Low confidence. Please confirm: ${command.originalText}"
+            )
+        }
+    }
+
+    /**
+     * Process text input directly (for keyboard/chat input)
+     * Uses FunctionGemma for intelligent command processing
+     */
+    fun processTextInput(text: String) {
+        viewModelScope.launch {
+            _isProcessing.value = true
+            try {
+                if (_useFunctionGemma.value) {
+                    processWithFunctionGemma(text)
+                } else {
+                    processWithLegacyParser(text, 1.0f)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error processing text input", e)
+                _error.value = e.message
             } finally {
                 _isProcessing.value = false
             }
@@ -563,6 +753,7 @@ class VoiceCommandViewModel @Inject constructor(
         super.onCleared()
         voiceCommandService.cleanup()
         voiceFeedbackService.cleanup()
+        functionGemmaService.close()
         Log.d(TAG, "VoiceCommandViewModel cleared")
     }
 }

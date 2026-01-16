@@ -121,4 +121,32 @@ object DateUtils {
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
     }
+
+    /**
+     * Get the start of yesterday (00:00:00.000)
+     * @return Timestamp in milliseconds
+     */
+    fun getStartOfYesterday(): Long {
+        return Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    /**
+     * Get the end of yesterday (23:59:59.999)
+     * @return Timestamp in milliseconds
+     */
+    fun getEndOfYesterday(): Long {
+        return Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+    }
 }

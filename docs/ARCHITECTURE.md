@@ -103,8 +103,15 @@ Duka.AI follows a **Clean Architecture** approach with **MVVM (Model-View-ViewMo
 │  ┌──────────────────────────────────────────────────┐       │
 │  │  Voice Command System                            │       │
 │  │  - Android SpeechRecognizer                      │       │
-│  │  - Rule-based Intent Parser                      │       │
+│  │  - FunctionGemma NLU (270M params)               │       │
 │  │  - Multi-language support                        │       │
+│  └──────────────────────────────────────────────────┘       │
+│                                                              │
+│  ┌──────────────────────────────────────────────────┐       │
+│  │  FunctionGemma Service                           │       │
+│  │  - Natural language → function calling           │       │
+│  │  - On-device TFLite inference                    │       │
+│  │  - Pattern-based fallback                        │       │
 │  └──────────────────────────────────────────────────┘       │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
@@ -389,15 +396,78 @@ data/
 ```
 ml/
 ├── classifier/
-│   ├── ProductClassifier.kt            # TFLite wrapper
+│   ├── ProductClassifier.kt            # TFLite wrapper interface
+│   ├── TFLiteProductClassifier.kt      # TFLite implementation
 │   ├── ImagePreprocessor.kt            # Image preprocessing
 │   └── ClassificationResult.kt         # Result data class
-└── voice/
-    ├── VoiceCommandHandler.kt          # Speech recognition
-    ├── IntentParser.kt                 # Command parsing
-    ├── CommandIntent.kt                # Intent types
-    └── EntityExtractor.kt              # Extract entities (qty, product)
+├── functiongemma/                       # FunctionGemma NLU System
+│   ├── DukaToolSchema.kt               # Tool/function definitions (10 tools)
+│   ├── FunctionGemmaInference.kt       # TFLite inference engine
+│   ├── FunctionGemmaParser.kt          # Parse function calls from output
+│   ├── DukaFunctionExecutor.kt         # Execute functions against repos
+│   └── FunctionGemmaService.kt         # High-level orchestration
+├── BarcodeScanner.kt                    # ML Kit barcode scanning
+└── ImageUtils.kt                        # Image processing utilities
 ```
+
+#### FunctionGemma Architecture
+
+FunctionGemma is a 270M parameter model specialized for function calling that powers DukaAI's natural language interface.
+
+```
+User Input (Voice/Text)
+        │
+        ▼
+┌─────────────────────────────────────┐
+│  FunctionGemmaService               │
+│  - Orchestrates command processing  │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│  FunctionGemmaInference (TFLite)    │
+│  - Load model from assets           │
+│  - GPU acceleration (optional)      │
+│  - Generate function calls          │
+└────────────┬────────────────────────┘
+             │ Model Output (with control tokens)
+             ▼
+┌─────────────────────────────────────┐
+│  FunctionGemmaParser                │
+│  - Extract function name            │
+│  - Parse arguments with <escape>    │
+│  - Support parallel calls           │
+└────────────┬────────────────────────┘
+             │ ParsedFunctionCall(name, args)
+             ▼
+┌─────────────────────────────────────┐
+│  DukaFunctionExecutor               │
+│  - Map to repository operations     │
+│  - Execute with transaction safety  │
+│  - Return structured results        │
+└────────────┬────────────────────────┘
+             │ FunctionExecutionResult
+             ▼
+┌─────────────────────────────────────┐
+│  Voice/UI Feedback                  │
+│  - TTS confirmation                 │
+│  - UI state update                  │
+└─────────────────────────────────────┘
+```
+
+**Available Functions (10 tools):**
+| Function | Description |
+|----------|-------------|
+| `record_sale` | Record a sale transaction |
+| `add_product` | Add new product to inventory |
+| `update_stock` | Update product stock levels |
+| `check_stock` | Check product inventory |
+| `search_products` | Search for products |
+| `record_payment` | Record customer payment |
+| `add_customer` | Add new customer |
+| `get_customer_balance` | Check customer credit balance |
+| `get_sales_analytics` | Get sales statistics |
+| `get_low_stock_alerts` | Get low stock warnings |
 
 ---
 

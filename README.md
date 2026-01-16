@@ -60,7 +60,8 @@ Transform how small shop owners (kantemba operators) in Zambia manage their busi
 - [x] **100% Offline functionality** - All features work without internet
 
 ### 🚧 In Progress
-- [ ] Voice commands in English, Nyanja, and Bemba (ML model training)
+- [x] **FunctionGemma Integration** - Natural language command processing via 270M parameter model
+- [x] Voice commands in English, Nyanja, and Bemba (FunctionGemma + Speech API)
 - [x] Product recognition AI (integration complete - model needs retraining with larger dataset)
 - [ ] Advanced analytics reports
 - [ ] Multi-language UI (string resources)
@@ -83,6 +84,7 @@ Transform how small shop owners (kantemba operators) in Zambia manage their busi
 │  (ViewModels, Use Cases, Services)  │
 ├─────────────────────────────────────┤
 │          AI/ML Layer                │
+│  - FunctionGemma NLU (270M params)  │
 │  - Product Recognition (TFLite)     │
 │  - Voice Commands (Speech API)      │
 ├─────────────────────────────────────┤
@@ -101,8 +103,10 @@ Transform how small shop owners (kantemba operators) in Zambia manage their busi
 - **Cloud**: Firebase Firestore + Cloud Storage
 - **Camera**: CameraX 1.4.1 + ML Kit Barcode Scanning 17.2.0
 - **Background Tasks**: WorkManager 2.9.1
-- **AI/ML**: TensorFlow Lite (MobileNetV3-Small) - In Training
-- **Voice**: Android SpeechRecognizer API - Planned
+- **AI/ML**: TensorFlow Lite 2.14.0
+  - FunctionGemma (270M) - Natural language understanding & function calling
+  - MobileNetV3-Small - Product image recognition
+- **Voice**: Android SpeechRecognizer API + FunctionGemma NLU
 - **Min SDK**: 24 (Android 7.0) - Covers 95%+ of Zambian devices
 - **Target SDK**: 36 (Android 15)
 
@@ -123,6 +127,7 @@ dukaai/
 │   │   │   │   │   └── models/        # Domain models
 │   │   │   │   ├── ml/                # ML/AI layer
 │   │   │   │   │   ├── classifier/    # Product classifier
+│   │   │   │   │   ├── functiongemma/ # FunctionGemma NLU system
 │   │   │   │   │   └── voice/         # Voice command handler
 │   │   │   │   ├── ui/                # Presentation layer
 │   │   │   │   │   ├── screens/       # Compose screens
@@ -153,11 +158,31 @@ dukaai/
 └── README.md                          # This file
 ```
 
-## 🆕 Recent Updates (November 2025)
+## 🆕 Recent Updates (January 2026)
 
 ### Latest Implementations
 
-#### Barcode Scanner Integration ✨ NEW
+#### FunctionGemma Integration ✨ NEW
+- **FunctionGemma NLU** - 270M parameter model for natural language understanding
+- **10 Tool Functions** - Complete set of shop management operations:
+  - `record_sale` - Record sales transactions
+  - `add_product` - Add new products
+  - `update_stock` - Update inventory
+  - `check_stock` - Check stock levels
+  - `search_products` - Search products
+  - `record_payment` - Record customer payments
+  - `add_customer` - Add customers
+  - `get_customer_balance` - Check credit balance
+  - `get_sales_analytics` - Get sales stats
+  - `get_low_stock_alerts` - Low stock warnings
+- **Voice/Text Commands** - Speak or type naturally:
+  - "Sell 3 coca-cola" → Records sale
+  - "How many bread in stock?" → Checks inventory
+  - "John paid 500" → Records payment
+- **Fallback System** - Pattern-based parsing when model unavailable
+- **Integration**: Seamlessly integrated with VoiceCommandViewModel
+
+#### Barcode Scanner Integration
 - **CameraScannerScreen** with full CameraX integration
 - **ML Kit Barcode Scanning** - Real-time detection of EAN, UPC, ISBN, TEXT formats
 - **Scanner Features**:
