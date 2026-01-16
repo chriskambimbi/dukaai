@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dukaai.data.local.entity.PaymentEntity
 import com.example.dukaai.ui.viewmodel.CreditViewModel
+import com.example.dukaai.ui.theme.SlateBackground
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -130,6 +131,7 @@ fun RecordPaymentScreen(
     }
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             TopAppBar(
                 title = { Text("Record Payment") },

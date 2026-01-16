@@ -22,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dukaai.ui.viewmodel.OperationResult
 import com.example.dukaai.ui.viewmodel.SettingsViewModel
+import com.example.dukaai.ui.theme.SlateBackground
 
 /**
  * Settings Screen
@@ -68,6 +69,7 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },

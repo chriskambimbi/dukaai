@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.example.dukaai.ui.theme.SlateBackground
 import java.util.concurrent.Executors
 
 /**
@@ -80,6 +81,7 @@ fun CameraScannerScreen(
     }
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             TopAppBar(
                 title = { Text("Scan Barcode") },

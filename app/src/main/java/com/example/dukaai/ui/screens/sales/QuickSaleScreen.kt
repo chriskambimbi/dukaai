@@ -21,6 +21,7 @@ import com.example.dukaai.ui.viewmodel.ProductViewModel
 import com.example.dukaai.ui.viewmodel.SaleViewModel
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
+import com.example.dukaai.ui.theme.SlateBackground
 
 /**
  * Quick Sale Screen
@@ -61,6 +62,7 @@ fun QuickSaleScreen(
     }
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             TopAppBar(
                 title = { Text("Quick Sale") },

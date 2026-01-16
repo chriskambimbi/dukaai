@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import com.example.dukaai.data.local.entity.ProductEntity
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.viewmodel.ProductViewModel
+import com.example.dukaai.ui.theme.SlateBackground
 
 /**
  * Screen for adding a new product
@@ -158,6 +159,7 @@ fun AddProductScreen(
     }
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             TopAppBar(
                 title = { Text("Add New Product") },

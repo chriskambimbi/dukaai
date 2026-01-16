@@ -19,6 +19,7 @@ import com.example.dukaai.ui.components.*
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.viewmodel.CreditViewModel
 import com.example.dukaai.util.WhatsAppHelper
+import com.example.dukaai.ui.theme.SlateBackground
 
 /**
  * Customer Detail Screen
@@ -72,6 +73,7 @@ fun CustomerDetailScreen(
     val unpaidTransactions = unpaidCredits.size
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             CustomerDetailTopBar(
                 customerName = currentCustomer.name,

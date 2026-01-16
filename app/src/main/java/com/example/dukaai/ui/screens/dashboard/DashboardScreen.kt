@@ -53,7 +53,7 @@ fun DashboardScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = SlateBackground
     ) { paddingValues ->
         LazyColumn(
             modifier = modifier

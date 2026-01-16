@@ -56,7 +56,7 @@ fun VoiceCommandScreen(
     var showLanguageDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = SlateBackground
     ) { paddingValues ->
         Column(
             modifier = modifier

@@ -93,7 +93,7 @@ fun ProductListScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = SlateBackground,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddProduct.route) },

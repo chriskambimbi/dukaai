@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dukaai.ui.components.*
 import com.example.dukaai.ui.viewmodel.ProductViewModel
+import com.example.dukaai.ui.theme.SlateBackground
 
 /**
  * Product Detail Screen
@@ -73,6 +74,7 @@ fun ProductDetailScreen(
     } else 0
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             ProductDetailTopBar(
                 onBackClick = { navController.popBackStack() },

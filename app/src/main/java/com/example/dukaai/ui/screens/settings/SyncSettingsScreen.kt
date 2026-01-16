@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import com.example.dukaai.data.sync.ConflictResolution
 import com.example.dukaai.data.sync.NetworkType
 import com.example.dukaai.ui.viewmodel.SyncViewModel
+import com.example.dukaai.ui.theme.SlateBackground
 
 /**
  * Sync Settings Screen
@@ -38,6 +39,7 @@ fun SyncSettingsScreen(
     var showConflictResolutionDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = SlateBackground,
         topBar = {
             TopAppBar(
                 title = { Text("Sync Settings") },
