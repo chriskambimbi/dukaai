@@ -2,6 +2,8 @@ package com.example.dukaai.ui.screens.products
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,24 +21,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.dukaai.ui.components.*
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.theme.*
+import kotlin.math.roundToInt
 
 /**
- * Product List Screen - Modern, minimalistic design
+ * Product List Screen - Enhanced with UX improvements
  * Features:
- * - Clean header without solid colored AppBar
- * - Integrated search with smooth design
- * - Sensitive info toggle (hide cost/margin)
- * - Modern filter chips
- * - Enhanced product cards
+ * - Clean header with sensitive info toggle
+ * - Search with smooth design
+ * - Category tabs with emoji icons
+ * - Swipeable product cards (right: quick sale, left: edit/delete)
+ * - Improved stock status colors (green/orange/red)
+ * - Extended FAB with clear label
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,20 +101,31 @@ fun ProductListScreen(
     Scaffold(
         containerColor = SlateBackground,
         floatingActionButton = {
-            FloatingActionButton(
+            // Extended FAB with clear label
+            ExtendedFloatingActionButton(
                 onClick = { navController.navigate(Screen.AddProduct.route) },
-                containerColor = CopperPrimary,
-                contentColor = Color.White
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Product")
-            }
+                containerColor = EmeraldAccent,
+                contentColor = Color.White,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Add Product",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            )
         }
     ) { paddingValues ->
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             // Header section
             item {
@@ -129,10 +146,10 @@ fun ProductListScreen(
                 )
             }
 
-            // Category filter chips
+            // Category filter tabs with icons
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                CategoryFilterChips(
+                CategoryTabsWithIcons(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it },
                     categoryCounts = categoryCounts
@@ -152,24 +169,54 @@ fun ProductListScreen(
                     Text(
                         text = "${filteredProducts.size} products",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = SlateTextSecondary
                     )
 
-                    TextButton(
+                    // Sort dropdown button
+                    Surface(
                         onClick = { showFilterSheet = true },
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        color = SlateSurfaceVariant
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.SwapVert,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = sortOption.displayName,
-                            style = MaterialTheme.typography.labelMedium
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.SwapVert,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = SlateTextSecondary
+                            )
+                            Text(
+                                text = sortOption.displayName,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = SlateTextPrimary
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = SlateTextSecondary
+                            )
+                        }
                     }
+                }
+
+                // Swipe hint
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Swipe cards: → Quick Sale  |  ← Edit/Delete",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SlateTextTertiary
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -184,15 +231,16 @@ fun ProductListScreen(
                 }
             } else {
                 items(filteredProducts, key = { it.id }) { product ->
-                    ProductCard(
-                        productName = product.name,
-                        category = product.category,
-                        currentStock = product.currentStock,
-                        minStockThreshold = product.minStockThreshold,
-                        sellingPrice = product.sellingPrice,
-                        buyingPrice = product.buyingPrice,
+                    SwipeableProductCard(
+                        product = product,
                         showSensitiveInfo = showSensitiveInfo,
-                        onClick = {
+                        onProductClick = {
+                            navController.navigate(Screen.ProductDetail.createRoute(product.id))
+                        },
+                        onQuickSale = {
+                            navController.navigate(Screen.QuickSale.route)
+                        },
+                        onEdit = {
                             navController.navigate(Screen.ProductDetail.createRoute(product.id))
                         },
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
@@ -206,7 +254,7 @@ fun ProductListScreen(
     if (showFilterSheet) {
         ModalBottomSheet(
             onDismissRequest = { showFilterSheet = false },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = SlateSurface
         ) {
             SortFilterBottomSheet(
                 currentSort = sortOption,
@@ -243,7 +291,8 @@ private fun ProductsHeader(
             Text(
                 text = "Products",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = SlateTextPrimary
             )
 
             Row(
@@ -254,9 +303,9 @@ private fun ProductsHeader(
                     onClick = onToggleSensitiveInfo,
                     colors = IconButtonDefaults.iconButtonColors(
                         contentColor = if (showSensitiveInfo)
-                            MaterialTheme.colorScheme.primary
+                            EmeraldAccent
                         else
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            SlateTextTertiary
                     )
                 ) {
                     Icon(
@@ -275,7 +324,8 @@ private fun ProductsHeader(
                 IconButton(onClick = onSortClick) {
                     Icon(
                         imageVector = Icons.Outlined.FilterList,
-                        contentDescription = "Sort & Filter"
+                        contentDescription = "Sort & Filter",
+                        tint = SlateTextSecondary
                     )
                 }
             }
@@ -293,7 +343,7 @@ private fun ModernSearchBar(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        color = SlateSurfaceVariant
     ) {
         TextField(
             value = query,
@@ -302,14 +352,14 @@ private fun ModernSearchBar(
             placeholder = {
                 Text(
                     text = "Search products...",
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    color = SlateTextTertiary
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Outlined.Search,
                     contentDescription = "Search",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    tint = SlateTextTertiary
                 )
             },
             trailingIcon = {
@@ -322,7 +372,7 @@ private fun ModernSearchBar(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Clear",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            tint = SlateTextTertiary
                         )
                     }
                 }
@@ -341,58 +391,322 @@ private fun ModernSearchBar(
     }
 }
 
+// Category data with icons
+private data class CategoryData(
+    val name: String,
+    val emoji: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
+
+private val categoriesWithIcons = listOf(
+    CategoryData("All", "📦", Icons.Outlined.Inventory2),
+    CategoryData("Beverages", "🥤", Icons.Outlined.LocalDrink),
+    CategoryData("Food", "🍞", Icons.Outlined.BakeryDining),
+    CategoryData("Toiletries", "🧴", Icons.Outlined.Sanitizer),
+    CategoryData("Cooking Oil", "🫒", Icons.Outlined.OilBarrel)
+)
+
 @Composable
-private fun CategoryFilterChips(
+private fun CategoryTabsWithIcons(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
     categoryCounts: Map<String, Int>,
     modifier: Modifier = Modifier
 ) {
-    val categories = listOf("All", "Beverages", "Food", "Toiletries", "Cooking Oil")
-
     LazyRow(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(categories) { category ->
-            val isSelected = selectedCategory == category
-            val count = if (category == "All") null else categoryCounts[category]
+        items(categoriesWithIcons) { category ->
+            val isSelected = selectedCategory == category.name
+            val count = if (category.name == "All") null else categoryCounts[category.name]
 
-            FilterChip(
-                selected = isSelected,
-                onClick = { onCategorySelected(category) },
-                label = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+            Surface(
+                onClick = { onCategorySelected(category.name) },
+                shape = RoundedCornerShape(12.dp),
+                color = if (isSelected) EmeraldAccent else SlateSurface,
+                border = if (!isSelected) {
+                    androidx.compose.foundation.BorderStroke(1.dp, SlateBorder)
+                } else null
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Emoji icon
+                    Text(
+                        text = category.emoji,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Column {
                         Text(
-                            text = category,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                            text = category.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color.White else SlateTextPrimary
                         )
                         if (count != null && count > 0) {
                             Text(
-                                text = "$count",
+                                text = "$count items",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                                else
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                color = if (isSelected) Color.White.copy(alpha = 0.8f) else SlateTextTertiary
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SwipeableProductCard(
+    product: ProductItem,
+    showSensitiveInfo: Boolean,
+    onProductClick: () -> Unit,
+    onQuickSale: () -> Unit,
+    onEdit: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    val swipeThreshold = 100f
+
+    Box(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        // Background actions (revealed on swipe)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+                .clip(RoundedCornerShape(12.dp)),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Left action (Quick Sale) - revealed on swipe right
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(EmeraldAccent)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                    Text(
+                        text = "Quick Sale",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Right action (Edit/Delete) - revealed on swipe left
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(WarningYellow)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Edit",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+
+        // Main card content
+        Card(
+            onClick = onProductClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            when {
+                                offsetX > swipeThreshold -> {
+                                    onQuickSale()
+                                    offsetX = 0f
+                                }
+                                offsetX < -swipeThreshold -> {
+                                    onEdit()
+                                    offsetX = 0f
+                                }
+                                else -> {
+                                    offsetX = 0f
+                                }
+                            }
+                        },
+                        onHorizontalDrag = { _, dragAmount ->
+                            offsetX = (offsetX + dragAmount).coerceIn(-150f, 150f)
+                        }
+                    )
                 },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = CopperPrimary,
-                    selectedLabelColor = Color.White
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    selectedBorderColor = CopperPrimary,
-                    enabled = true,
-                    selected = isSelected
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = SlateSurface),
+            elevation = CardDefaults.cardElevation(defaultElevation = if (offsetX != 0f) 4.dp else 0.dp),
+            border = if (offsetX == 0f) {
+                androidx.compose.foundation.BorderStroke(1.dp, SlateBorder)
+            } else null
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Product avatar with initial
+                ProductAvatar(
+                    name = product.name,
+                    category = product.category
                 )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Product info
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = SlateTextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = product.category,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SlateTextTertiary
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Stock status with improved colors
+                    StockStatusBadge(
+                        currentStock = product.currentStock,
+                        minStockThreshold = product.minStockThreshold
+                    )
+                }
+
+                // Price and margin
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "K ${product.sellingPrice.toInt()}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = EmeraldAccent
+                    )
+
+                    if (showSensitiveInfo) {
+                        val margin = ((product.sellingPrice - product.buyingPrice) / product.buyingPrice * 100).toInt()
+                        Text(
+                            text = "+$margin%",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (margin >= 20) SuccessGreen else SlateTextTertiary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductAvatar(
+    name: String,
+    category: String,
+    modifier: Modifier = Modifier
+) {
+    val initial = name.firstOrNull()?.uppercaseChar() ?: '?'
+    val backgroundColor = when (category) {
+        "Beverages" -> Color(0xFFE0F2FE) // Light blue
+        "Food" -> Color(0xFFFEF3C7) // Light yellow
+        "Toiletries" -> Color(0xFFF3E8FF) // Light purple
+        "Cooking Oil" -> Color(0xFFDCFCE7) // Light green
+        else -> SlateSurfaceVariant
+    }
+
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = initial.toString(),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = SlateTextPrimary
+        )
+    }
+}
+
+@Composable
+private fun StockStatusBadge(
+    currentStock: Int,
+    minStockThreshold: Int,
+    modifier: Modifier = Modifier
+) {
+    val (statusText, statusColor, bgColor) = when {
+        currentStock == 0 -> Triple("Out of stock", ErrorRed, ErrorBg)
+        currentStock < 5 -> Triple("Critical: $currentStock left", ErrorRed, ErrorBg)
+        currentStock <= minStockThreshold -> Triple("Low: $currentStock left", WarningYellow, WarningBg)
+        else -> Triple("In stock: $currentStock", SuccessGreen, SuccessBg)
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(6.dp),
+        color = bgColor
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(statusColor)
+            )
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = statusColor
             )
         }
     }
@@ -414,14 +728,14 @@ private fun EmptyProductsState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(SlateSurfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Inventory2,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                tint = SlateTextTertiary
             )
         }
 
@@ -430,7 +744,8 @@ private fun EmptyProductsState(
         Text(
             text = if (searchQuery.isEmpty()) "No products yet" else "No products found",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = SlateTextPrimary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -441,7 +756,7 @@ private fun EmptyProductsState(
             else
                 "Try adjusting your search or filters",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            color = SlateTextSecondary
         )
 
         if (searchQuery.isEmpty()) {
@@ -450,8 +765,9 @@ private fun EmptyProductsState(
             Button(
                 onClick = onAddProduct,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CopperPrimary
-                )
+                    containerColor = EmeraldAccent
+                ),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -481,7 +797,8 @@ private fun SortFilterBottomSheet(
         Text(
             text = "Sort & Filter",
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = SlateTextPrimary
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -491,39 +808,40 @@ private fun SortFilterBottomSheet(
             text = "SORT BY",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            color = SlateTextSecondary,
             letterSpacing = 1.sp
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        SortOption.values().forEach { option ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        if (currentSort == option)
-                            CopperPrimary.copy(alpha = 0.1f)
-                        else
-                            Color.Transparent
-                    )
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+        SortOption.entries.forEach { option ->
+            Surface(
+                onClick = { onSortSelected(option) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = if (currentSort == option) EmeraldSubtle else Color.Transparent
             ) {
-                RadioButton(
-                    selected = currentSort == option,
-                    onClick = { onSortSelected(option) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = CopperPrimary
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = currentSort == option,
+                        onClick = { onSortSelected(option) },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = EmeraldAccent
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = option.displayName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (currentSort == option) FontWeight.Medium else FontWeight.Normal
-                )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = option.displayName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (currentSort == option) FontWeight.Medium else FontWeight.Normal,
+                        color = SlateTextPrimary
+                    )
+                }
             }
         }
 
@@ -534,7 +852,7 @@ private fun SortFilterBottomSheet(
             text = "CATEGORY",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            color = SlateTextSecondary,
             letterSpacing = 1.sp
         )
 
@@ -543,32 +861,33 @@ private fun SortFilterBottomSheet(
         val categories = listOf("All", "Beverages", "Food", "Toiletries", "Cooking Oil", "Household", "Other")
 
         categories.forEach { category ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        if (selectedCategory == category)
-                            CopperPrimary.copy(alpha = 0.1f)
-                        else
-                            Color.Transparent
-                    )
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                onClick = { onCategorySelected(category) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = if (selectedCategory == category) EmeraldSubtle else Color.Transparent
             ) {
-                RadioButton(
-                    selected = selectedCategory == category,
-                    onClick = { onCategorySelected(category) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = CopperPrimary
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectedCategory == category,
+                        onClick = { onCategorySelected(category) },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = EmeraldAccent
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = category,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (selectedCategory == category) FontWeight.Medium else FontWeight.Normal
-                )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = category,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (selectedCategory == category) FontWeight.Medium else FontWeight.Normal,
+                        color = SlateTextPrimary
+                    )
+                }
             }
         }
 
