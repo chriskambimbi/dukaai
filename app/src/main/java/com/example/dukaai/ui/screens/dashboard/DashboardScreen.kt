@@ -336,14 +336,15 @@ private fun SmartSuggestionsSection(
                         text = "SMART SUGGESTIONS",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        color = SlateTextSecondary, // Better contrast
                         letterSpacing = 1.sp
                     )
                 }
                 Text(
                     text = timeLabel,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = SlateTextPrimary // Explicit dark color
                 )
             }
         }
@@ -479,6 +480,7 @@ private fun SuggestedProductCard(
                 text = product.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
+                color = SlateTextPrimary, // Explicit dark color for contrast
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -515,7 +517,8 @@ private fun SalesSummaryCard(modifier: Modifier = Modifier) {
                 Text(
                     text = "Today's Sales",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = SlateTextPrimary // Explicit dark color
                 )
                 Surface(
                     shape = RoundedCornerShape(20.dp),
@@ -553,12 +556,12 @@ private fun SalesSummaryCard(modifier: Modifier = Modifier) {
                     text = "K 456.00",
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = SlateTextPrimary // Explicit dark color
                 )
                 Text(
                     text = "vs K 387 yesterday",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SlateTextTertiary,
+                    color = SlateTextSecondary, // Better contrast
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
@@ -603,18 +606,19 @@ private fun StatItem(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            tint = SlateTextSecondary // Better contrast
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = SlateTextPrimary // Explicit dark color
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            color = SlateTextSecondary // Better contrast
         )
     }
 }
@@ -735,7 +739,8 @@ private fun TopSellersSection(
             Text(
                 text = "Top Sellers Today",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = SlateTextPrimary // Explicit dark color
             )
             TextButton(onClick = { navController.navigate(Screen.Analytics.route) }) {
                 Text(
@@ -924,6 +929,7 @@ private fun TopSellerCard(
                 text = topSeller.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
+                color = SlateTextPrimary, // Explicit dark color for contrast
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
