@@ -162,23 +162,30 @@ dukaai/
 
 ### Latest Implementations
 
-#### FunctionGemma Integration ✨ NEW
+#### FunctionGemma Integration ✨ EXPANDED
 - **FunctionGemma NLU** - 270M parameter model for natural language understanding
-- **10 Tool Functions** - Complete set of shop management operations:
-  - `record_sale` - Record sales transactions
-  - `add_product` - Add new products
-  - `update_stock` - Update inventory
-  - `check_stock` - Check stock levels
-  - `search_products` - Search products
-  - `record_payment` - Record customer payments
-  - `add_customer` - Add customers
-  - `get_customer_balance` - Check credit balance
-  - `get_sales_analytics` - Get sales stats
-  - `get_low_stock_alerts` - Low stock warnings
+- **121 Tool Functions** - Comprehensive shop management across 14 categories:
+  - **Product Management (14)**: `add_product`, `edit_product`, `delete_product`, `check_stock`, `update_stock`, `search_products`, `list_products`, `get_low_stock_alerts`, `get_out_of_stock`, `get_top_selling_products`, etc.
+  - **Sales Operations (10)**: `record_sale`, `record_batch_sale`, `edit_sale`, `delete_sale`, `get_sale_history`, `get_today_sales`, `process_refund`, etc.
+  - **Credit Management (11)**: `record_credit_sale`, `get_customer_balance`, `get_overdue_credits`, `mark_credit_as_paid`, `send_credit_reminder`, `set_customer_credit_limit`, etc.
+  - **Customer Management (10)**: `add_customer`, `update_customer`, `search_customers`, `get_customer_details`, `get_top_customers`, etc.
+  - **Payment Operations (11)**: `record_payment`, `get_payment_history`, `get_today_payments`, `allocate_payment`, `generate_payment_receipt`, etc.
+  - **Inventory Operations (4)**: `get_inventory_history`, `get_inventory_value`, `record_stock_take`, `get_inventory_summary`
+  - **Analytics & Reporting (10)**: `get_sales_analytics`, `get_profit_analytics`, `get_revenue_trends`, `generate_report`, `compare_periods`, etc.
+  - **Settings & Configuration (10)**: `update_language`, `set_pin_protection`, `update_sync_settings`, `set_shop_details`, etc.
+  - **Backup/Export/Import (10)**: `backup_data`, `restore_data`, `sync_to_cloud`, `export_to_csv`, `export_to_pdf`, etc.
+  - **Barcode/Scanner (5)**: `scan_product_barcode`, `find_by_barcode`, `update_product_barcode`, `generate_barcode`
+  - **Navigation/UI (12)**: `go_to_dashboard`, `go_to_products`, `go_to_sales`, `open_scanner`, etc.
+  - **Machine Learning (5)**: `classify_product_image`, `suggest_product_price`, `predict_low_stock`, `get_sales_forecast`
+  - **Voice Framework (6)**: `set_voice_language`, `help_with_voice_commands`, `toggle_voice_feedback`, etc.
+  - **Validation (3)**: `verify_pin`, `confirm_operation`, `cancel_confirmation`
 - **Voice/Text Commands** - Speak or type naturally:
-  - "Sell 3 coca-cola" → Records sale
+  - "Sell 3 coca-cola to John on credit" → Records credit sale
   - "How many bread in stock?" → Checks inventory
-  - "John paid 500" → Records payment
+  - "John paid 500 via mobile money" → Records payment
+  - "Show me today's sales" → Displays sales summary
+  - "Go to analytics" → Navigates to analytics screen
+  - "Export sales report to PDF" → Generates PDF report
 - **Fallback System** - Pattern-based parsing when model unavailable
 - **Integration**: Seamlessly integrated with VoiceCommandViewModel
 

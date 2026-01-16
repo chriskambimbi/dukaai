@@ -414,6 +414,12 @@ sealed class ProcessingResult {
                     is FunctionExecutionResult.InsufficientStock -> {
                         "Not enough ${result.productName} in stock. Available: ${result.availableStock}, Requested: ${result.requestedQuantity}"
                     }
+                    is FunctionExecutionResult.NavigationAction -> {
+                        "Navigating to ${result.destination}"
+                    }
+                    is FunctionExecutionResult.RequiresPin -> {
+                        result.message
+                    }
                 }
             }
         }

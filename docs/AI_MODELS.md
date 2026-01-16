@@ -72,8 +72,8 @@ User Input: "sell 3 coca-cola to John on credit"
                     ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  Tool Schema (DukaToolSchema.kt)                            │
-│  - Defines 10 available functions                           │
-│  - Each with typed parameters                               │
+│  - Defines 121 available functions across 14 categories     │
+│  - Each with typed parameters and descriptions              │
 │  - Formatted as function declarations                       │
 └────────────────────────┬────────────────────────────────────┘
                          │
@@ -128,38 +128,185 @@ User Input: "sell 3 coca-cola to John on credit"
 
 ### Available Functions (Tool Schema)
 
+DukaAI provides **121 voice/text commands** across **14 categories**:
+
 ```kotlin
-// 10 functions available for DukaAI
+// ═══════════════════════════════════════════════════════════════════
+// PRODUCT MANAGEMENT (14 tools)
+// ═══════════════════════════════════════════════════════════════════
+add_product(name, selling_price, category?, initial_stock?, buying_price?, barcode?, low_stock_threshold?, unit?)
+edit_product(product_name, new_name?, new_selling_price?, new_buying_price?, new_category?, new_low_stock_threshold?)
+delete_product(product_name, confirm?)
+get_product_details(product_name)
+check_stock(product_name)
+update_stock(product_name, quantity, reason?)
+search_products(query, search_type?)
+get_low_stock_alerts(threshold?)
+list_products(category?, sort_by?, sort_order?, limit?)
+get_out_of_stock()
+get_top_selling_products(period, metric?, limit?)
+get_product_categories()
+update_product_price(product_name, new_selling_price?, new_buying_price?)
+get_product_profit_margin(product_name)
 
-1. record_sale(product_name, quantity, customer_name?, sale_type?)
-   // Record a sale transaction
+// ═══════════════════════════════════════════════════════════════════
+// SALES OPERATIONS (10 tools)
+// ═══════════════════════════════════════════════════════════════════
+record_sale(product_name, quantity, customer_name?, sale_type?, unit_price?, discount?)
+record_batch_sale(items, customer_name?, sale_type?)
+edit_sale(sale_id, new_quantity?, new_unit_price?)
+delete_sale(sale_id, reason?, confirm?)
+get_sale_history(period?, product_name?, customer_name?, sale_type?)
+get_today_sales()
+get_recent_sales(limit?)
+calculate_sale_total(items, discount?)
+get_sales_by_payment_type(period)
+process_refund(sale_id, refund_amount?, reason?)
 
-2. add_product(name, selling_price, category?, initial_stock?, buying_price?)
-   // Add new product to inventory
+// ═══════════════════════════════════════════════════════════════════
+// CREDIT/DEBT MANAGEMENT (11 tools)
+// ═══════════════════════════════════════════════════════════════════
+record_credit_sale(customer_name, product_name, quantity, due_date?)
+get_customer_balance(customer_name)
+get_all_credit_balances(sort_by?)
+get_overdue_credits(days_overdue?)
+mark_credit_as_paid(credit_id)
+get_credit_history(customer_name, status?)
+send_credit_reminder(customer_name, channel?)
+get_total_credits_owed()
+update_credit_due_date(credit_id, new_due_date)
+set_customer_credit_limit(customer_name, credit_limit)
+get_customers_near_credit_limit(threshold_percent?)
 
-3. update_stock(product_name, quantity, reason?)
-   // Update stock (positive=add, negative=remove)
+// ═══════════════════════════════════════════════════════════════════
+// CUSTOMER MANAGEMENT (10 tools)
+// ═══════════════════════════════════════════════════════════════════
+add_customer(name, phone?, address?, notes?)
+update_customer(customer_name, new_name?, new_phone?, new_address?, new_notes?)
+delete_customer(customer_name, confirm?)
+search_customers(query)
+get_customer_details(customer_name)
+list_customers(sort_by?, has_balance?)
+get_customer_purchase_history(customer_name, period?)
+get_top_customers(metric, period?, limit?)
+get_customers_count()
+get_new_customers(period)
 
-4. check_stock(product_name)
-   // Check current stock level
+// ═══════════════════════════════════════════════════════════════════
+// PAYMENT OPERATIONS (11 tools)
+// ═══════════════════════════════════════════════════════════════════
+record_payment(customer_name, amount, payment_method?, reference?)
+get_payment_history(customer_name?, period?, payment_method?)
+get_today_payments()
+get_total_payments(period)
+edit_payment(payment_id, new_amount?, new_method?)
+delete_payment(payment_id, reason?, confirm?)
+get_payments_by_method(period)
+get_recent_payments(limit?)
+allocate_payment(customer_name, amount, credit_ids?)
+get_expected_payments(days_ahead?)
+generate_payment_receipt(payment_id, format?)
 
-5. search_products(query)
-   // Search products by name/category
+// ═══════════════════════════════════════════════════════════════════
+// INVENTORY OPERATIONS (4 tools)
+// ═══════════════════════════════════════════════════════════════════
+get_inventory_history(product_name?, movement_type?, period?)
+get_inventory_value(value_type?, category?)
+record_stock_take(product_name, actual_count, notes?)
+get_inventory_summary()
 
-6. record_payment(customer_name, amount, payment_method?)
-   // Record customer payment
+// ═══════════════════════════════════════════════════════════════════
+// ANALYTICS & REPORTING (10 tools)
+// ═══════════════════════════════════════════════════════════════════
+get_sales_analytics(period, metric?)
+get_daily_sales_data(period)
+get_profit_analytics(period, breakdown?)
+get_revenue_trends(period, compare_to?)
+get_category_performance(period)
+get_hourly_sales_pattern(period)
+generate_report(report_type, period?, format?)
+compare_periods(period1, period2, metrics?)
+get_dashboard_summary()
+get_slow_moving_products(days_threshold?, limit?)
 
-7. add_customer(name, phone?, address?)
-   // Add new customer
+// ═══════════════════════════════════════════════════════════════════
+// SETTINGS & CONFIGURATION (10 tools)
+// ═══════════════════════════════════════════════════════════════════
+get_settings(category?)
+update_language(language)
+set_pin_protection(enabled, pin?)
+update_sync_settings(auto_sync?, wifi_only?, sync_frequency?)
+set_low_stock_threshold(threshold)
+update_notification_settings(low_stock_alerts?, payment_due_alerts?, daily_summary?)
+set_currency_format(symbol?, position?, decimal_places?)
+set_shop_details(shop_name?, owner_name?, phone?, address?)
+reset_settings(confirm)
+get_app_info()
 
-8. get_customer_balance(customer_name)
-   // Check customer's outstanding credit
+// ═══════════════════════════════════════════════════════════════════
+// BACKUP/EXPORT/IMPORT (10 tools)
+// ═══════════════════════════════════════════════════════════════════
+backup_data(backup_type?, destination?)
+restore_data(backup_id?, confirm)
+sync_to_cloud()
+sync_from_cloud()
+get_sync_status()
+export_to_csv(data_type, period?)
+export_to_pdf(report_type, period?, customer_name?)
+import_products(file_path, update_existing?)
+list_backups()
+delete_backup(backup_id, confirm)
 
-9. get_sales_analytics(period, metric?)
-   // Get sales statistics (today, week, month)
+// ═══════════════════════════════════════════════════════════════════
+// BARCODE/SCANNER (5 tools)
+// ═══════════════════════════════════════════════════════════════════
+scan_product_barcode(action?)
+find_by_barcode(barcode)
+update_product_barcode(product_name, barcode)
+generate_barcode(product_name, format?)
+get_products_without_barcode()
 
-10. get_low_stock_alerts()
-    // Get products with low stock
+// ═══════════════════════════════════════════════════════════════════
+// NAVIGATION/UI (12 tools)
+// ═══════════════════════════════════════════════════════════════════
+go_to_dashboard()
+go_to_products()
+go_to_sales()
+go_to_customers()
+go_to_analytics()
+go_to_credits()
+go_to_settings()
+go_to_add_product()
+go_to_add_customer()
+go_back()
+open_scanner()
+open_product_detail(product_name)
+
+// ═══════════════════════════════════════════════════════════════════
+// MACHINE LEARNING (5 tools)
+// ═══════════════════════════════════════════════════════════════════
+classify_product_image(action_on_match?)
+get_ml_model_status()
+suggest_product_price(product_name, buying_price?)
+predict_low_stock(days_ahead?)
+get_sales_forecast(period, product_name?)
+
+// ═══════════════════════════════════════════════════════════════════
+// VOICE FRAMEWORK (6 tools)
+// ═══════════════════════════════════════════════════════════════════
+set_voice_language(language)
+help_with_voice_commands(category?)
+repeat_last_response()
+get_voice_command_history(limit?)
+toggle_voice_feedback(enabled)
+cancel_operation()
+
+// ═══════════════════════════════════════════════════════════════════
+// VALIDATION & CONFIRMATION (3 tools)
+// ═══════════════════════════════════════════════════════════════════
+verify_pin(pin)
+confirm_operation(operation_id, confirmed)
+cancel_confirmation()
 ```
 
 ### Example Commands
