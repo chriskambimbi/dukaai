@@ -494,7 +494,7 @@ def generate_sale_examples() -> List[Dict[str, Any]]:
         ("Sell {product}", lambda p, _: {"product_name": p, "quantity": 1}),
     ]
 
-    for _ in range(200):
+    for _ in range(250):
         product = random.choice(ALL_PRODUCTS)
         qty = random.randint(1, 20)
         template, args_func = random.choice(variations)
@@ -535,7 +535,7 @@ def generate_credit_sale_examples() -> List[Dict[str, Any]]:
         ("{customer} wants {qty} {product} on credit", True),
     ]
 
-    for _ in range(150):
+    for _ in range(200):
         customer = random.choice(CUSTOMER_NAMES)
         product = random.choice(ALL_PRODUCTS)
         qty = random.randint(1, 15)
@@ -588,7 +588,7 @@ def generate_stock_check_examples() -> List[Dict[str, Any]]:
         "Check {product} inventory",
     ]
 
-    for _ in range(130):
+    for _ in range(160):
         product = random.choice(ALL_PRODUCTS)
         template = random.choice(variations)
         user_input = template.format(product=product)
@@ -634,7 +634,7 @@ def generate_customer_balance_examples() -> List[Dict[str, Any]]:
         "Check {customer}'s credit",
     ]
 
-    for _ in range(130):
+    for _ in range(160):
         customer = random.choice(CUSTOMER_NAMES)
         template = random.choice(variations)
         user_input = template.format(customer=customer)
@@ -678,7 +678,7 @@ def generate_payment_examples() -> List[Dict[str, Any]]:
         ("{amount} from {customer}", lambda c, a: {"customer_name": c, "amount": a}),
     ]
 
-    for _ in range(150):
+    for _ in range(200):
         customer = random.choice(CUSTOMER_NAMES)
         amount = random.choice([50, 100, 150, 200, 250, 300, 500, 1000])
         template, args_func = random.choice(variations)
@@ -723,7 +723,7 @@ def generate_add_product_examples() -> List[Dict[str, Any]]:
         ("Add new product {product} K{price}", lambda p, pr: {"name": p, "selling_price": pr}),
     ]
 
-    for _ in range(80):
+    for _ in range(120):
         product = random.choice(ALL_PRODUCTS)
         price = random.choice([5, 10, 15, 20, 25, 30, 50, 100])
         template, args_func = random.choice(variations)
@@ -768,7 +768,7 @@ def generate_update_stock_examples() -> List[Dict[str, Any]]:
         ("{qty} {product} restocked", lambda p, q: {"product_name": p, "quantity": q, "reason": "restock"}),
     ]
 
-    for _ in range(80):
+    for _ in range(120):
         product = random.choice(ALL_PRODUCTS)
         qty = random.randint(10, 100)
         template, args_func = random.choice(variations)
@@ -817,7 +817,7 @@ def generate_analytics_examples() -> List[Dict[str, Any]]:
         ("{period} analytics", "get_sales_analytics"),
     ]
 
-    for _ in range(150):
+    for _ in range(180):
         period = random.choice(periods)
         template, func_name = random.choice(variations)
         user_input = template.format(period=period)
@@ -853,7 +853,7 @@ def generate_customer_management_examples() -> List[Dict[str, Any]]:
     examples = []
 
     # Add customer
-    for _ in range(90):
+    for _ in range(120):
         customer = random.choice(CUSTOMER_NAMES)
         phone = f"09{random.randint(60000000, 99999999)}"
 
@@ -906,7 +906,7 @@ def generate_low_stock_examples() -> List[Dict[str, Any]]:
         "Show low inventory",
     ]
 
-    for _ in range(90):
+    for _ in range(120):
         user_input = random.choice(variations)
 
         examples.append({
@@ -948,7 +948,7 @@ def generate_navigation_examples() -> List[Dict[str, Any]]:
     }
 
     for screen, variations in screens.items():
-        for _ in range(20):
+        for _ in range(26):
             user_input = random.choice(variations)
 
             examples.append({
@@ -981,7 +981,7 @@ def generate_batch_sale_examples() -> List[Dict[str, Any]]:
     """Generate batch sale examples."""
     examples = []
 
-    for _ in range(80):
+    for _ in range(110):
         num_items = random.randint(2, 4)
         items = []
         for _ in range(num_items):
@@ -1031,7 +1031,7 @@ def generate_product_search_examples() -> List[Dict[str, Any]]:
 
     categories = list(PRODUCTS.keys())
 
-    for _ in range(70):
+    for _ in range(100):
         if random.random() < 0.6:
             # Search by product name
             product = random.choice(ALL_PRODUCTS)
@@ -1094,7 +1094,7 @@ def generate_top_selling_examples() -> List[Dict[str, Any]]:
         "Best performing products {period}",
     ]
 
-    for _ in range(70):
+    for _ in range(100):
         period = random.choice(periods)
         template = random.choice(variations)
         user_input = template.format(period=period)
