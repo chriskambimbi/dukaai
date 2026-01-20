@@ -84,6 +84,7 @@ Transform how small shop owners (kantemba operators) in Zambia manage their busi
 │  (ViewModels, Use Cases, Services)  │
 ├─────────────────────────────────────┤
 │          AI/ML Layer                │
+│  - MediaPipe LLM (Gemma 2B int4)    │
 │  - FunctionGemma NLU (270M params)  │
 │  - Product Recognition (TFLite)     │
 │  - Voice Commands (Speech API)      │
@@ -103,10 +104,11 @@ Transform how small shop owners (kantemba operators) in Zambia manage their busi
 - **Cloud**: Firebase Firestore + Cloud Storage
 - **Camera**: CameraX 1.4.1 + ML Kit Barcode Scanning 17.2.0
 - **Background Tasks**: WorkManager 2.9.1
-- **AI/ML**: TensorFlow Lite 2.14.0
+- **AI/ML**: TensorFlow Lite 2.14.0 + MediaPipe 0.10.14
+  - MediaPipe LLM Inference - On-device Gemma 2B model
   - FunctionGemma (270M) - Natural language understanding & function calling
   - MobileNetV3-Small - Product image recognition
-- **Voice**: Android SpeechRecognizer API + FunctionGemma NLU
+- **Voice**: Android SpeechRecognizer API + FunctionGemma NLU + MediaPipe LLM
 - **Min SDK**: 24 (Android 7.0) - Covers 95%+ of Zambian devices
 - **Target SDK**: 36 (Android 15)
 
@@ -161,6 +163,25 @@ dukaai/
 ## 🆕 Recent Updates (January 2026)
 
 ### Latest Implementations
+
+#### Voice Command Execution on All Screens ✨ NEW
+- **In-place Voice Commands** - Voice now executes commands directly on each screen:
+  - **Dashboard**: Tap mic to sell products, check stock, record payments
+  - **Products Screen**: Voice FAB for quick commands like "Sell 5 Coca-Cola"
+  - **Quick Sale Screen**: Voice-first interface processes sales instantly
+  - **Analytics Screen**: Voice queries for reports and metrics
+- **VoiceInputDialog** - Unified voice input with example commands
+- **Real-time Feedback** - Result dialogs show success/failure after execution
+- **FunctionGemma Processing** - All voice commands processed by NLU model
+
+#### MediaPipe LLM Integration ✨ NEW
+- **On-device LLM Inference** - MediaPipe tasks-genai for Gemma models
+- **Multi-backend Support** - Automatic fallback chain:
+  1. MediaPipe LLM (preferred, uses Gemma 2B model)
+  2. TFLite inference (if available)
+  3. Pattern matching fallback (always available)
+- **Gemma 2B Model** - 1.3GB int4 quantized model for efficient mobile inference
+- **Offline Operation** - All AI processing happens on-device
 
 #### FunctionGemma Integration ✨ EXPANDED
 - **FunctionGemma NLU** - 270M parameter model for natural language understanding
