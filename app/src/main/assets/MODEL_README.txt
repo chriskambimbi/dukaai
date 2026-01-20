@@ -1,9 +1,15 @@
 ML Model Setup Instructions
 ============================
 
-To enable product recognition, you need to add a TensorFlow Lite model file.
+DukaAI uses two ML models:
+1. Product Classifier - For product recognition from images
+2. FunctionGemma - For voice command understanding (NLU)
 
-REQUIRED FILE:
+========================================
+1. PRODUCT CLASSIFIER
+========================================
+
+REQUIRED FILES:
 - product_classifier.tflite
 
 STEPS:
@@ -42,3 +48,65 @@ TESTING:
 - Test with different angles and distances
 
 For more details, see: ml/README.md
+
+========================================
+2. FUNCTIONGEMMA (Voice NLU)
+========================================
+
+DukaAI supports multiple backends for voice command understanding:
+
+OPTION A: MEDIAPIPE LLM (Recommended)
+-------------------------------------
+Uses Google's MediaPipe LLM Inference API with Gemma models.
+
+1. Download Gemma Model from Kaggle:
+   https://www.kaggle.com/models/google/gemma/tfLite/gemma-2b-it-gpu-int4
+
+   Or use the smaller variant:
+   https://www.kaggle.com/models/google/gemma/tfLite/gemma-1.1-2b-it-gpu-int4
+
+2. Place the model file in app's files directory:
+   - Copy gemma-2b-it-gpu-int4.bin to the device
+   - Use adb: adb push gemma-2b-it-gpu-int4.bin /data/data/com.example.dukaai/files/
+
+3. The app will automatically detect and use MediaPipe when model is present.
+
+OPTION B: TFLITE MODEL
+----------------------
+REQUIRED FILES:
+- function_gemma.tflite    (FunctionGemma model converted to TFLite)
+- tokenizer.json           (Tokenizer vocabulary - already included!)
+
+CONVERSION STEPS:
+   cd model_conversion
+   pip install -r requirements.txt
+   python3 convert_functiongemma_to_tflite.py
+   cp output/android_assets/function_gemma.tflite app/src/main/assets/
+
+Note: TFLite conversion is complex for LLMs. MediaPipe is recommended.
+
+OPTION C: FALLBACK MODE (Default)
+---------------------------------
+If no model files are present, DukaAI uses pattern-matching
+based fallback for basic voice command understanding.
+
+Supported commands:
+- "Sell 3 Coca-Cola"
+- "John paid 500"
+- "How many Mealie Meal in stock?"
+- "Who owes me money?"
+- "Sales today"
+- "Go home" / "Open inventory"
+- And more...
+
+BACKEND PRIORITY:
+1. MediaPipe LLM (if model available)
+2. TFLite model (if available)
+3. Pattern matching fallback (always available)
+
+CURRENT STATUS:
+- tokenizer.json: INCLUDED (33MB)
+- MediaPipe model: Download from Kaggle
+- TFLite model: Not available (use MediaPipe instead)
+
+For detailed instructions, see: model_conversion/README.md

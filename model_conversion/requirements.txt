@@ -1,0 +1,11 @@
+# Requirements for FunctionGemma to TFLite conversion
+torch>=2.0.0
+transformers>=4.40.0
+optimum>=1.19.0
+onnx>=1.15.0
+onnxruntime>=1.17.0
+onnx-tf>=1.10.0
+tensorflow>=2.15.0
+numpy>=1.24.0
+sentencepiece>=0.1.99
+protobuf>=3.20.0

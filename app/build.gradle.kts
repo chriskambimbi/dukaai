@@ -48,6 +48,11 @@ android {
         compose = true
         mlModelBinding = true
     }
+
+    // Don't compress ML models for faster loading
+    androidResources {
+        noCompress += listOf("tflite", "lite")
+    }
 }
 
 // Room schema export for migration testing
@@ -109,6 +114,9 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
+
+    // MediaPipe LLM Inference (for FunctionGemma)
+    implementation("com.google.mediapipe:tasks-genai:0.10.14")
 
     // ExifInterface for image orientation
     implementation("androidx.exifinterface:exifinterface:1.3.7")
