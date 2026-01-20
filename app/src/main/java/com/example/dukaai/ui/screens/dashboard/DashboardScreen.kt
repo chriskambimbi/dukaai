@@ -27,9 +27,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dukaai.ui.components.VoiceInputDialog
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.theme.*
+import com.example.dukaai.ui.viewmodel.VoiceCommandViewModel
+import com.example.dukaai.voice.VoiceCommandResult
+import com.example.dukaai.voice.VoiceCommandType
 
 /**
  * Dashboard Screen - Modern, minimalistic home screen of Duka.AI
@@ -45,7 +50,8 @@ import com.example.dukaai.ui.theme.*
 @Composable
 fun DashboardScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    voiceCommandViewModel: VoiceCommandViewModel = hiltViewModel()
 ) {
     val currentHour = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
     val greeting = when {
@@ -53,6 +59,51 @@ fun DashboardScreen(
         currentHour < 17 -> "Good afternoon"
         else -> "Good evening"
     }
+
+    // Voice command state
+    var showVoiceInput by remember { mutableStateOf(false) }
+    var showVoiceResult by remember { mutableStateOf(false) }
+    var voiceResultMessage by remember { mutableStateOf("") }
+    var voiceResultSuccess by remember { mutableStateOf(true) }
+
+    // Observe voice command execution result
+    val executionResult by voiceCommandViewModel.executionResult.collectAsState()
+
+    // Handle execution result
+    LaunchedEffect(executionResult) {
+        executionResult?.let { result ->
+            when (result) {
+                is VoiceCommandResult.Success -> {
+                    voiceResultMessage = result.message
+                    voiceResultSuccess = true
+                    showVoiceResult = true
+                    // Handle navigation if needed
+                    if (result.data == "navigate_to_analytics") {
+                        navController.navigate(Screen.Analytics.route)
+                    }
+                }
+                is VoiceCommandResult.Failure -> {
+                    voiceResultMessage = "${result.error}: ${result.reason}"
+                    voiceResultSuccess = false
+                    showVoiceResult = true
+                }
+                is VoiceCommandResult.NeedsConfirmation -> {
+                    voiceResultMessage = result.prompt
+                    voiceResultSuccess = false
+                    showVoiceResult = true
+                }
+            }
+            voiceCommandViewModel.clearExecutionResult()
+        }
+    }
+
+    // Voice command examples for dashboard
+    val voiceCommandExamples = listOf(
+        "Sell 3 Coca-Cola",
+        "Check stock for bread",
+        "Show low stock items",
+        "Record payment from John 500"
+    )
 
     Scaffold(
         containerColor = SlateBackground
@@ -76,7 +127,7 @@ fun DashboardScreen(
             item {
                 PrimaryActionsRow(
                     onScanClick = { navController.navigate(Screen.CameraScanner.route) },
-                    onVoiceClick = { navController.navigate(Screen.VoiceCommand.route) },
+                    onVoiceClick = { showVoiceInput = true },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -113,6 +164,53 @@ fun DashboardScreen(
                 )
             }
         }
+    }
+
+    // Voice Input Dialog
+    VoiceInputDialog(
+        isVisible = showVoiceInput,
+        onDismiss = { showVoiceInput = false },
+        onResult = { spokenText ->
+            // Process voice command using FunctionGemma
+            voiceCommandViewModel.processTextInput(spokenText)
+        },
+        title = "Voice Command",
+        hint = "Say a command like 'Sell 3 Coca-Cola'",
+        exampleCommands = voiceCommandExamples
+    )
+
+    // Voice Result Snackbar/Dialog
+    if (showVoiceResult) {
+        AlertDialog(
+            onDismissRequest = { showVoiceResult = false },
+            containerColor = SlateSurface,
+            icon = {
+                Icon(
+                    imageVector = if (voiceResultSuccess) Icons.Default.CheckCircle else Icons.Default.Error,
+                    contentDescription = null,
+                    tint = if (voiceResultSuccess) EmeraldAccent else WarningYellow,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = if (voiceResultSuccess) "Command Executed" else "Command Issue",
+                    fontWeight = FontWeight.SemiBold,
+                    color = SlateTextPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = voiceResultMessage,
+                    color = SlateTextSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showVoiceResult = false }) {
+                    Text("OK", color = EmeraldAccent)
+                }
+            }
+        )
     }
 }
 

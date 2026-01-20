@@ -38,10 +38,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dukaai.data.local.entity.ProductEntity
+import com.example.dukaai.ui.components.VoiceInputDialog
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.theme.*
 import com.example.dukaai.ui.viewmodel.ProductViewModel
 import com.example.dukaai.ui.viewmodel.SaleViewModel
+import com.example.dukaai.ui.viewmodel.VoiceCommandViewModel
+import com.example.dukaai.voice.VoiceCommandResult
 import kotlinx.coroutines.delay
 
 /**
@@ -55,7 +58,8 @@ fun QuickSaleScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     productViewModel: ProductViewModel = hiltViewModel(),
-    saleViewModel: SaleViewModel = hiltViewModel()
+    saleViewModel: SaleViewModel = hiltViewModel(),
+    voiceCommandViewModel: VoiceCommandViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedProduct by remember { mutableStateOf<ProductEntity?>(null) }
@@ -66,6 +70,47 @@ fun QuickSaleScreen(
     var showManualEntry by remember { mutableStateOf(false) }
     var isSearchFocused by remember { mutableStateOf(false) }
     var manualBarcode by remember { mutableStateOf("") }
+
+    // Voice command state
+    var showVoiceInput by remember { mutableStateOf(false) }
+    var showVoiceResult by remember { mutableStateOf(false) }
+    var voiceResultMessage by remember { mutableStateOf("") }
+    var voiceResultSuccess by remember { mutableStateOf(true) }
+
+    // Observe voice command execution result
+    val voiceExecutionResult by voiceCommandViewModel.executionResult.collectAsState()
+
+    // Handle voice execution result
+    LaunchedEffect(voiceExecutionResult) {
+        voiceExecutionResult?.let { result ->
+            when (result) {
+                is VoiceCommandResult.Success -> {
+                    voiceResultMessage = result.message
+                    voiceResultSuccess = true
+                    showVoiceResult = true
+                }
+                is VoiceCommandResult.Failure -> {
+                    voiceResultMessage = "${result.error}: ${result.reason}"
+                    voiceResultSuccess = false
+                    showVoiceResult = true
+                }
+                is VoiceCommandResult.NeedsConfirmation -> {
+                    voiceResultMessage = result.prompt
+                    voiceResultSuccess = false
+                    showVoiceResult = true
+                }
+            }
+            voiceCommandViewModel.clearExecutionResult()
+        }
+    }
+
+    // Voice command examples for quick sale
+    val voiceCommandExamples = listOf(
+        "Sell 3 Coca-Cola",
+        "2 bread",
+        "Sell 5 sugar",
+        "One Fanta"
+    )
 
     // Track recently added items for animation
     var recentlyAddedIds by remember { mutableStateOf(setOf<String>()) }
@@ -168,7 +213,7 @@ fun QuickSaleScreen(
         ) {
             // Primary action: Voice (larger, more prominent)
             VoiceInputSection(
-                onVoiceClick = { /* Voice sale */ },
+                onVoiceClick = { showVoiceInput = true },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -377,6 +422,53 @@ fun QuickSaleScreen(
                 }
                 showConfirmation = false
                 selectedProduct = null
+            }
+        )
+    }
+
+    // Voice Input Dialog
+    VoiceInputDialog(
+        isVisible = showVoiceInput,
+        onDismiss = { showVoiceInput = false },
+        onResult = { spokenText ->
+            // Process voice command using FunctionGemma
+            voiceCommandViewModel.processTextInput(spokenText)
+        },
+        title = "Voice Sale",
+        hint = "Say product name and quantity",
+        exampleCommands = voiceCommandExamples
+    )
+
+    // Voice Result Dialog
+    if (showVoiceResult) {
+        AlertDialog(
+            onDismissRequest = { showVoiceResult = false },
+            containerColor = SlateSurface,
+            icon = {
+                Icon(
+                    imageVector = if (voiceResultSuccess) Icons.Default.CheckCircle else Icons.Default.Error,
+                    contentDescription = null,
+                    tint = if (voiceResultSuccess) EmeraldAccent else WarningYellow,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = if (voiceResultSuccess) "Sale Recorded" else "Command Issue",
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = voiceResultMessage,
+                    color = TextSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showVoiceResult = false }) {
+                    Text("OK", color = EmeraldAccent)
+                }
             }
         )
     }

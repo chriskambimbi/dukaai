@@ -29,9 +29,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dukaai.ui.components.VoiceInputDialog
 import com.example.dukaai.ui.navigation.Screen
 import com.example.dukaai.ui.theme.*
+import com.example.dukaai.ui.viewmodel.VoiceCommandViewModel
+import com.example.dukaai.voice.VoiceCommandResult
 import kotlin.math.roundToInt
 
 /**
@@ -48,7 +52,8 @@ import kotlin.math.roundToInt
 @Composable
 fun ProductListScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    voiceCommandViewModel: VoiceCommandViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
@@ -56,6 +61,47 @@ fun ProductListScreen(
     var showSensitiveInfo by remember { mutableStateOf(true) }
     var sortOption by remember { mutableStateOf(SortOption.NAME_ASC) }
     val focusManager = LocalFocusManager.current
+
+    // Voice command state
+    var showVoiceInput by remember { mutableStateOf(false) }
+    var showVoiceResult by remember { mutableStateOf(false) }
+    var voiceResultMessage by remember { mutableStateOf("") }
+    var voiceResultSuccess by remember { mutableStateOf(true) }
+
+    // Observe voice command execution result
+    val executionResult by voiceCommandViewModel.executionResult.collectAsState()
+
+    // Handle execution result
+    LaunchedEffect(executionResult) {
+        executionResult?.let { result ->
+            when (result) {
+                is VoiceCommandResult.Success -> {
+                    voiceResultMessage = result.message
+                    voiceResultSuccess = true
+                    showVoiceResult = true
+                }
+                is VoiceCommandResult.Failure -> {
+                    voiceResultMessage = "${result.error}: ${result.reason}"
+                    voiceResultSuccess = false
+                    showVoiceResult = true
+                }
+                is VoiceCommandResult.NeedsConfirmation -> {
+                    voiceResultMessage = result.prompt
+                    voiceResultSuccess = false
+                    showVoiceResult = true
+                }
+            }
+            voiceCommandViewModel.clearExecutionResult()
+        }
+    }
+
+    // Voice command examples for products
+    val voiceCommandExamples = listOf(
+        "Sell 5 Coca-Cola",
+        "Add new product Fanta at 15 kwacha",
+        "Check stock for bread",
+        "Show low stock items"
+    )
 
     // Sample product data (will be replaced with ViewModel data)
     val sampleProducts = remember {
@@ -101,24 +147,42 @@ fun ProductListScreen(
     Scaffold(
         containerColor = SlateBackground,
         floatingActionButton = {
-            // Extended FAB with clear label
-            ExtendedFloatingActionButton(
-                onClick = { navController.navigate(Screen.AddProduct.route) },
-                containerColor = EmeraldAccent,
-                contentColor = Color.White,
-                icon = {
+            // Two FABs: Voice and Add Product
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                // Voice Command FAB
+                FloatingActionButton(
+                    onClick = { showVoiceInput = true },
+                    containerColor = AccentOrange,
+                    contentColor = Color.White
+                ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                },
-                text = {
-                    Text(
-                        text = "Add Product",
-                        fontWeight = FontWeight.SemiBold
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Voice command"
                     )
                 }
-            )
+
+                // Extended FAB with clear label
+                ExtendedFloatingActionButton(
+                    onClick = { navController.navigate(Screen.AddProduct.route) },
+                    containerColor = EmeraldAccent,
+                    contentColor = Color.White,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Add Product",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                )
+            }
         }
     ) { paddingValues ->
         LazyColumn(
@@ -272,6 +336,53 @@ fun ProductListScreen(
                 }
             )
         }
+    }
+
+    // Voice Input Dialog
+    VoiceInputDialog(
+        isVisible = showVoiceInput,
+        onDismiss = { showVoiceInput = false },
+        onResult = { spokenText ->
+            // Process voice command using FunctionGemma
+            voiceCommandViewModel.processTextInput(spokenText)
+        },
+        title = "Voice Command",
+        hint = "Say a command like 'Sell 5 Coca-Cola'",
+        exampleCommands = voiceCommandExamples
+    )
+
+    // Voice Result Dialog
+    if (showVoiceResult) {
+        AlertDialog(
+            onDismissRequest = { showVoiceResult = false },
+            containerColor = SlateSurface,
+            icon = {
+                Icon(
+                    imageVector = if (voiceResultSuccess) Icons.Default.CheckCircle else Icons.Default.Error,
+                    contentDescription = null,
+                    tint = if (voiceResultSuccess) EmeraldAccent else WarningYellow,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = if (voiceResultSuccess) "Command Executed" else "Command Issue",
+                    fontWeight = FontWeight.SemiBold,
+                    color = SlateTextPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = voiceResultMessage,
+                    color = SlateTextSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showVoiceResult = false }) {
+                    Text("OK", color = EmeraldAccent)
+                }
+            }
+        )
     }
 }
 
