@@ -113,3 +113,9 @@ SCREENS_IMPLEMENTATION_SUMMARY.md
 
 # Build logs
 /tmp/build_output.txt
+
+# Large model files
+*.bin
+model_conversion/gemma_model/
+model_conversion/outputs/*.model
+
